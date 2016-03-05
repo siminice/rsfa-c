@@ -786,7 +786,7 @@ void LoadEvents() {
   sprintf(filename, "events-%d.db", year);
   f = fopen(filename, "rt");
   if (f==NULL) { fprintf(stderr, "ERROR: database %s not found.\n", filename); return; }
-  for (int i=0; i<n*(n-1); i++) {
+  for (int i=0; i<rr*n*(n-1); i++) {
     fgets(s, 5000, f);
     tk[0] = strtok(s, ",\n");
     for (int j=1; j<EV_COLS; j++) tk[j]=strtok(NULL, ",\n");
