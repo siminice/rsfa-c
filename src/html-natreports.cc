@@ -51,7 +51,7 @@
 #define EV_YELLOWRED	 6
 #define PSO_TIME     200
 
-//burdca,Carol,Burdan,00/00/1912,ROM,173, , ,3,3,0,-11
+//burdca,Carol,Burdan,00/00/1912,ROM,Steaua, , ,3,3,0,-11
 #define CAT_MNEM	 0
 #define CAT_PREN	 1
 #define CAT_NAME	 2
@@ -103,11 +103,12 @@ char catalog[CAT_ROWS][128];
 int  tid[MAX_N];
 int	 nrept, reptid[MAX_N], nrep[MAX_N][MAX_N];
 int  plid[MAX_N][MAX_ROSTER];
+char *club[MAX_NAMES];
 char rmnem[MAX_N][MAX_ROSTER][7];
 int  npl[MAX_N];
 
 int NP, NEP;
-int *psez, *pmeci, *ptit, *pint, *prez, *pban, *pmin, *pgol, *pgre, *prnk;
+int *psez, *pmeci, *ptit, *pint, *prez, *pban, *ppen, *pown, *prec, *pmin, *pgol, *pgre, *prnk;
 int *csez, *cmeci, *ctit, *cint, *crez, *cban, *cmin, *cgol, *cgre, *crnk;
 int *pesez, *pemeci, *petit, *peint, *perez, *peban, *pemin, *pegol, *pegre, *pernk;
 int *cesez, *cemeci, *cetit, *ceint, *cerez, *ceban, *cemin, *cegol, *cegre, *cernk;
@@ -224,6 +225,7 @@ int Load() {
 void ResetStats() {
   for (int i=0; i<NP; i++) {
      psez[i] = pmeci[i] = ptit[i] = pint[i] = prez[i] = pban[i] = pmin[i] = pgol[i] = pgre[i] = 0;
+     ppen[i] = pown[i] = prec[i] = 0;
      pesez[i] = pemeci[i] = petit[i] = peint[i] = perez[i] = peban[i] = pemin[i] = pegol[i] = pegre[i] = 0;
      pernk[i] = i;
   }
@@ -244,6 +246,9 @@ void InitStats() {
   pgol  = new int[MAX_NAMES];
   pgre  = new int[MAX_NAMES];
   prnk  = new int[MAX_NAMES];
+  ppen  = new int[MAX_NAMES];
+  pown  = new int[MAX_NAMES];
+  prec  = new int[MAX_NAMES];
 
   csez  = new int[MAX_NAMES];
   cmeci = new int[MAX_NAMES];
@@ -282,6 +287,7 @@ void InitStats() {
      csez[i] = cmeci[i] = ctit[i] = cint[i] = crez[i] = cban[i] = cmin[i] = cgol[i] = cgre[i] = 0;
      cesez[i] = cemeci[i] = cetit[i] = ceint[i] = cerez[i] = ceban[i] = cemin[i] = cegol[i] = cegre[i] = 0;
      cernk[i] = i;
+     club[i] = NULL;
   }
 }
 
@@ -464,19 +470,18 @@ int FindCtty(char *s) {
 	return -1;
 }
 
-void LoadCatalog() {
+void LoadOneCatalog(int y) {
 //burdca,Carol,Burdan,00/00/1912,ROM,173, , ,3,3,0,-11
   char filename[64], s[5000], *tk[CAT_COLS];
   FILE *f;
-	NT = 0;
-  sprintf(filename, "nnat-%d.dat", year);
+  sprintf(filename, "nnat-%d.dat", y);
   f = fopen(filename, "rt");
   if (f==NULL) { fprintf(stderr, "ERROR: database %s not found.\n", filename); return; }
-	int i = 0;
+  int r = 0;
   while (!feof(f)) {
     fgets(s, 5000, f);
 		if (strlen(s)<20) continue;
-		strncpy(catalog[i], s, 127);
+		strncpy(catalog[r], s, 127);
     tk[0] = strtok(s, ",\n");
     for (int j=1; j<CAT_COLS; j++) tk[j]=strtok(NULL, ",\n");
 		int tm = atoi(tk[CAT_TEAM]);
@@ -484,12 +489,29 @@ void LoadCatalog() {
 		if (tix<0) { tix = NT; tid[NT] = tm; npl[tix] = 0; NT++; }
 		int pix = Pl.FindMnem(tk[CAT_MNEM]);
 		plid[tix][npl[tix]] = pix;
+        if (pix >= 0){
+          if (club[pix] == NULL) {
+            club[pix] = new char[DB_CELL];
+            strncpy(club[pix], tk[CAT_TEAM], DB_CELL);
+          } else {
+//            if (strstr(club[pix], tk[CAT_TEAM]) == NULL) {
+//              strcat(club[pix], " & ");
+//              strcat(club[pix], tk[CAT_TEAM]);
+//            }
+          }
+        }
 		strncpy(rmnem[tix][npl[tix]], tk[CAT_MNEM], 6);
 		npl[tix]++;
 		s[0] = 0;
-		i++;
+		r++;
   }
   fclose(f);
+}
+
+void LoadCatalog() {
+  NT = 0;
+  LoadOneCatalog(year);
+  LoadOneCatalog(year+1);
 }
 
 void LoadDB() {
@@ -970,12 +992,13 @@ void HTMLEventsBlock(int r, int a, int b) {
         cx++;
 				if (pid>=0) {
 					if (home==CTTY_ROM) {
-		        pgol[pid]++;
+		      pgol[pid]++;
   		      cgol[pid]++;
+              if (evt[e] == EV_PKGOAL) { ppen[pid]++; }
 					}
 					else {
 		        pegol[pid-MAX_NAMES]++;
-  		      cegol[pid-MAX_NAMES]++;
+  		        cegol[pid-MAX_NAMES]++;
 					}
 				}
       }
@@ -994,11 +1017,11 @@ void HTMLEventsBlock(int r, int a, int b) {
       if (evt[e]==EV_GOAL || evt[e]==EV_PKGOAL) {
 				if (pid>=0) {
 					if (away==CTTY_ROM) {
-		        pgol[pid]++;
+		          pgol[pid]++;
  	 		      cgol[pid]++;
 					}
 					else {
-		        pegol[pid-MAX_NAMES]++;
+		          pegol[pid-MAX_NAMES]++;
  	 		      cegol[pid-MAX_NAMES]++;
 					}
 				}
@@ -1793,15 +1816,16 @@ void SynopticTable() {
   fprintf(f, "<TH>Prenume</TH>");
   fprintf(f, "<TH>Nume</TH>");
   fprintf(f, "<TH>Data naºterii</TH>");
-//  fprintf(f, "<TH>Club</TH>");
+  fprintf(f, "<TH></TH>");
+  fprintf(f, "<TH>Club</TH>");
   fprintf(f, "<TH>Meciuri</TH>");
   fprintf(f, "<TH>Minute</TH>");
   fprintf(f, "<TH>Titular</TH>");
   fprintf(f, "<TH>Rezervã</TH>");
   fprintf(f, "<TH>Goluri</TH>");
-//  fprintf(f, "<TH>Pen</TH>");
-//  fprintf(f, "<TH>Auto</TH>");
-//  fprintf(f, "<TH>Gol/-</TH>");
+  fprintf(f, "<TH>Pen</TH>");
+  fprintf(f, "<TH>Auto</TH>");
+  fprintf(f, "<TH>Gol/-</TH>");
   fprintf(f, "</TR></THEAD>\n");
 	fprintf(f, "<TBODY>\n");
 
@@ -1820,14 +1844,15 @@ void SynopticTable() {
         Pl.P[x].name, Pl.P[x].pren, hexlink, Pl.P[x].name);
     CanonicDOB(Pl.P[x].dob, DOB_DD_MM_YYYY);
     fprintf(of, "<TD align=\"right\" sorttable_customkey=\"%d\">%s</TD>", NumericDOB(Pl.P[x].dob, DOB_YYYYMMDD), Pl.P[x].dob);
+    fprintf(of, "<TD/><TD>%s</TD>", club[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pmeci[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pmin[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", ptit[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", prez[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pgol[x]);
-//    fprintf(of, "<TD align=\"right\">%d</TD>", ppen[x]);
-//    fprintf(of, "<TD align=\"right\">%d</TD>", pown[x]);
-//    fprintf(of, "<TD align=\"right\">%d</TD>", prec[x]);
+    fprintf(of, "<TD align=\"right\">%d</TD>", ppen[x]);
+    fprintf(of, "<TD align=\"right\">%d</TD>", pown[x]);
+    fprintf(of, "<TD align=\"right\">%d</TD>", prec[x]);
     fprintf(of, "</TR>\n");
   }
 

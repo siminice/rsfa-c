@@ -805,13 +805,13 @@ int FindMnem(char *mnem) {
   return -1;
 }
 
-int MatchID(int a, int b) {
-  int mid = a*(n-1)+b-(b>a?1:0);
+int MatchID(int r, int a, int b) {
+  int mid = r*n*(n-1) + a*(n-1)+b-(b>a?1:0);
   return mid;
 }
 
 void GetEvents(int r, int a, int b) {
-  int mid = MatchID(a, b);
+  int mid = MatchID(r, a, b);
   int ep, et;
   char s[DB_CELL], *sp, *sm;
   for (int i=0; i<EV_COLS; i++) {
