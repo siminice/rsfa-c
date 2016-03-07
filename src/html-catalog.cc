@@ -720,9 +720,10 @@ void CanonicDOB(char *dob, int fmt) {
 int NumericDate(char *s) {
 	int l = strlen(s);
 	if (l<10) return -1;
-	if (s[0]==' ') return -1;
+    while (s[0]==' ') s++;
+	if (s[0]==0) return -1;
 	int ssn = 1000*(s[6]-48) + 100*(s[7]-48) + 10*(s[8]-48) + (s[9]-48) - (FY-1);
-  int day = 500*(s[3]-48) + 50*(s[4]-48) + 10*(s[0]-48) + (s[1]-48);
+    int day = 500*(s[3]-48) + 50*(s[4]-48) + 10*(s[0]-48) + (s[1]-48);
 	int hrs = 0;
 	int min = 0;
 	if (l>15) {
@@ -929,10 +930,12 @@ void ExtractLists(int year, char ****ldb, char ****edb) {
 				n = clist[pid][0];
 				if (pid>=0) {
 					if (r<ngm[y][COMP_LIGA]) {
-						if (clist[pid][0]==0) qdeb[pid] = ndt;
-						if ((j>=DB_ROSTER1+11 && j<DB_ROSTER1+22) || (j>=DB_ROSTER2+11)) {
-							qdeb[pid] += (90-min);
-						}
+						if (qdeb[pid]<0 || qdeb[pid]>1000000000) {
+                           qdeb[pid] = ndt;
+  						   if ((j>=DB_ROSTER1+11 && j<DB_ROSTER1+22) || (j>=DB_ROSTER2+11)) {
+						 	 qdeb[pid] += (90-min);
+						   }
+                        }
 					}
 					clist[pid][n+1] = 1000*y+r;
 					mlist[pid][n+1] = 1000*(j<DB_ROSTER2?wx:wy)+min;
