@@ -47,17 +47,19 @@
 #define DB_T1		 8
 #define DB_T2		31
 
-#define EV_GOAL		 0
-#define EV_OWNGOAL	 1
-#define EV_PKGOAL	 2
-#define EV_PKMISS	 3
-#define EV_YELLOW	 4
-#define EV_RED	 	 5
-#define EV_YELLOWRED	 6
+#define EV_GOAL      0
+#define EV_OWNGOAL   1
+#define EV_PKGOAL    2
+#define EV_PKMISS    3
+#define EV_YELLOW    4
+#define EV_RED       5
+#define EV_YELLOWRED 6
 
 #define SPECIAL		50
 #define LOSS_BOTH_0	50
 #define LOSS_BOTH_9	59
+
+#define ROSTER_SIZE 22
 
 const char *month[] = {"", "Ian", "Feb", "Mar", "Apr", "Mai", "Iun",
                      "Iul", "Aug", "Sep", "Oct", "Noi", "Dec"};
@@ -88,7 +90,7 @@ int  NG;
 bool winter;
 int num_winter;
 int *start_winter, *end_winter;
-int roster[44];
+int roster[2*ROSTER_SIZE], annotation[2*ROSTER_SIZE];
 int nev, evp[EV_COLS], evm[EV_COLS], evt[EV_COLS];
 
 /* *************************************** */
@@ -549,7 +551,7 @@ void AddStats(int px, int k, int m) {
   else if (k>=12 && k<=14) {
     if (m>0) { prez[px]++; crez[px]++; }
   }
-  else if (k<=22) {
+  else if (k<=ROSTER_SIZE) {
     if (m==0) { pban[px]++; cban[px]++; }
   }
 }
@@ -1251,7 +1253,10 @@ void HTMLInfoBlock(int r, int a, int b) {
 }
 
 void ResetRoster() {
-  for (int i=0; i<44; i++) roster[i] = -1;
+  for (int i=0; i<2*ROSTER_SIZE; i++) {
+    roster[i] = -1;
+    annotation[i] = 0;
+  }
 }
 
 void GetRoster(int r, int a, int b) {
@@ -1273,7 +1278,7 @@ void GetRoster(int r, int a, int b) {
     sm = strtok(NULL, ",\n");
     if (sm!=NULL) rm = atoi(sm); else rm=-1;
     if (sp!=NULL) rp = FindMnem(sp); else rp=-1;
-     if (rm>=0 && rp>=0) roster[22+i-DB_ROSTER2] = rp;
+     if (rm>=0 && rp>=0) roster[ROSTER_SIZE+i-DB_ROSTER2] = rp;
   }
 }
 
@@ -1296,8 +1301,8 @@ void GetEvents(int r, int a, int b) {
   ResetEvents();
   for (int i=0; i<EV_COLS; i++) {
     strcpy(s, edb[mid][i]);
-    sp = strtok(s, "'`\"/,\n");
-    sm = strtok(NULL, "'`\"/,\n");
+    sp = strtok(s, "'`\"/,#!\n");
+    sm = strtok(NULL, "'`\"/,#!\n");
     if (sm!=NULL) em = atoi(sm); else em=-1;
     if (sp!=NULL) ep = FindMnem(sp); else ep=-1;
     if (ep>=0 || em>=0) {
@@ -1306,6 +1311,7 @@ void GetEvents(int r, int a, int b) {
            if (edb[mid][i][6]=='`') evt[i] = EV_OWNGOAL;
       else if (edb[mid][i][6]=='"') evt[i] = EV_PKGOAL;
       else if (edb[mid][i][6]=='/') evt[i] = EV_PKMISS;
+      else if (edb[mid][i][6]=='!') evt[i] = EV_RED;
       nev++;
     }
   }
@@ -1325,8 +1331,12 @@ void SortEvents() {
     }
   } while (!sorted);
   for (int i=0; i<nev; i++) {
-    int rid = RosterIdx(evp[i]);
-    evp[i] = rid;
+    evp[i] = RosterIdx(evp[i]);
+    if (evp[i]>=0 && evp[i]<2*ROSTER_SIZE) {
+      if (evt[i] == EV_RED) {
+        annotation[evp[i]] = evm[i];
+      }
+    }
   }
 }
 
@@ -1366,8 +1376,8 @@ void HTMLEventsBlock(int r, int a, int b) {
     if (evm[e]>90 && evm[e]<120) sprintf(sm, "90+%d'", evm[e]%90);
     if (evp[e]>=0 && evp[e]<44) pid = roster[evp[e]]; else pid = -1;
     hsc = 2;
-    if (evp[e]>= 0 && evp[e]<22) hsc = 1;
-    if (evp[e]>=22 && evp[e]<44) hsc = 0;
+    if (evp[e]>= 0 && evp[e]<ROSTER_SIZE) hsc = 1;
+    if (evp[e]>=22 && evp[e]<2*ROSTER_SIZE) hsc = 0;
     if (evt[e]==EV_OWNGOAL) {
       hsc = 1-hsc;
     }
@@ -1463,11 +1473,12 @@ void HTMLPlayerTH() {
   fprintf(of, "    <tbody>\n");
 }
 
-void HTMLPlayerTR(int sn, int px, int m) {
+void HTMLPlayerTR(int pn, int px, int m) {
     if (px < 0) {
-      fprintf(of, "      <tr class=\"%s\"></tr>\n", (sn%2==1?"odd":"even"));
+      fprintf(of, "      <tr class=\"%s\"></tr>\n", (pn%2==1?"odd":"even"));
       return;
     }
+    int sn = (pn<=ROSTER_SIZE? pn : pn-ROSTER_SIZE);
     char pini[12];
     GetInitial(px, pini);
     makeHexlink(pmnem[px]);
@@ -1484,8 +1495,13 @@ void HTMLPlayerTR(int sn, int px, int m) {
     fprintf(of, "        <td class=\"season_goals\">%d</td>\n", pgol[px]);
     fprintf(of, "        <td class=\"career_goals\"> (%d)</td>\n", cgol[px]);
     fprintf(of, "        <td class=\"bookings\">");
-    if (sn <=11 && m<90) fprintf(of, "<img src=\"../../so.png\"/>%d'", m+1);
-    else if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", 91-m);
+    if (annotation[pn-1] > 0) {
+      if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", annotation[pn-1]-m);
+      fprintf(of,  "<img src=\"../../cr.png\"/>%d'", annotation[pn-1]);
+    } else {
+      if (sn <=11 && m<90) fprintf(of, "<img src=\"../../so.png\"/>%d'", m+1);
+      else if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", 91-m);
+    }
     fprintf(of, "        </td>\n");
     fprintf(of, "      </tr>\n\n");
 }
@@ -1562,7 +1578,7 @@ void HTMLLineupsBlock(int r, int a, int b) {
       m = atoi(spm);
     }
     AddStats(px, i, m);
-    HTMLPlayerTR(i, px, m);
+    HTMLPlayerTR(i+ROSTER_SIZE, px, m);
   }
 
   HTMLCoachTR(db[mid][DB_COACH2]);
@@ -1638,7 +1654,7 @@ void HTMLSubsBlock(int r, int a, int b) {
       m = atoi(spm);
     }
     AddStats(px, i, m);
-    HTMLPlayerTR(i, px, m);
+    HTMLPlayerTR(i+ROSTER_SIZE, px, m);
   }
 
   fprintf(of, "    </tbody>\n");
