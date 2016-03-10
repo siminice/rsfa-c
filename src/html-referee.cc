@@ -33,8 +33,12 @@
 #define NUM_ORD	10
 #define MAX_RR	 3
 #define MAX_TEAMS 24
+#define ROSTER_SIZE 22
 
-char  db[MAX_SEASONS][DB_ROWS][DB_COLS][DB_CELL];
+#define EV_COLS 30
+
+char   db[MAX_SEASONS][DB_ROWS][DB_COLS][DB_CELL];
+char  edb[MAX_SEASONS][DB_ROWS][DB_COLS][DB_CELL];
 int   qord[DB_ROWS], qd[DB_ROWS];
 int   ord[MAX_SEASONS][DB_ROWS];
 Catalog *Arb;
@@ -53,6 +57,11 @@ int num_winter;
 int *start_winter, *end_winter;
 char **club;
 char **mnem;
+char roster[2*ROSTER_SIZE][DB_CELL+1];
+const char *evsymb = "'`\"/#!";
+int rhyel[MAX_NAMES], rayel[MAX_NAMES];
+int rhred[MAX_NAMES], rared[MAX_NAMES];
+int rhpen[MAX_NAMES], rapen[MAX_NAMES];
 
 //---------------------------
 char *hexlink = new char[32];
@@ -293,6 +302,25 @@ void LoadDB(int year) {
   fclose(f);
 }
 
+void LoadEvents(int year) {
+  char filename[64], s[5000], *tk[DB_COLS];
+  FILE *f;
+  sprintf(filename, "events-%d.db", year);
+  f = fopen(filename, "rt");
+  if (f==NULL) { fprintf(stderr, "ERROR: database %s not found.\n", filename); return; }
+  int y = year - FY;
+  for (int i=0; i<NT*(NT-1); i++) {
+    fgets(s, 5000, f);
+    tk[0] = strtok(s, ",\n");
+    for (int j=1; j<EV_COLS; j++) tk[j]=strtok(NULL, ",\n");
+    for (int j=0; j<EV_COLS; j++) {
+      if (tk[j]!=NULL) strcpy(edb[y][i][j], tk[j]);
+      else strcpy(edb[y][i][j], " ");
+    }
+  }
+  fclose(f);
+}
+
 int NumericDate(char *s) {
 	int dig[] = {1, 0, 4, 3, 9, 8};
 	int x = 0;
@@ -351,6 +379,9 @@ void InitStats() {
 			hr[i][y] = 0;
 		}
 		rcenter[i] = rline[i] = 0;
+        rhyel[i] = rayel[i] = 0;
+        rhred[i] = rared[i] = 0;
+        rhpen[i] = rapen[i] = 0;
 	}
 }
 
@@ -363,7 +394,34 @@ void Add(int c, int year) {
 	ls[c] = year;
 }
 
+void GetRoster(int y, int r) {
+  char hpl[DB_CELL], apl[DB_CELL];
+  for (int i=0; i<ROSTER_SIZE; i++) {
+    strcpy(hpl, db[y-FY][r][DB_ROSTER1+i]);
+    strcpy(apl, db[y-FY][r][DB_ROSTER2+i]);
+    strncpy(roster[i], strtok(hpl, ":"), DB_CELL);
+    strncpy(roster[i+ROSTER_SIZE], strtok(apl, ":"), DB_CELL);
+  }
+}
+
+int RosterId(char *s) {
+  if (!s) return -1;
+  for (int i=0; i<2*ROSTER_SIZE; i++) {
+     if (strcmp(roster[i], s)==0) return i;
+  }
+  return -1;
+}
+
+int Tid(char *s) {
+  int rid = RosterId(s);
+  if (rid<0) return -1;
+  if (rid<ROSTER_SIZE) return 0;
+  if (rid<2*ROSTER_SIZE) return 1;
+  return -1;
+}
+
 void CollectData(int year) {
+    char spl[DB_CELL];
 	for (int i=0; i<NT*(NT-1); ++i) {
 		int arb = Arb->FindMnem(db[year-FY][i][DB_REF]);
 		int len = strlen(db[year-FY][i][DB_REF]);
@@ -384,6 +442,20 @@ void CollectData(int year) {
 			R[arb]->S[hm].addRes(x, y);
 			R[arb]->S[aw].addRes(y, x);
 		}
+        GetRoster(year, i);
+        for (int j=0; j<EV_COLS; j++) {
+          if (edb[year-FY][i][j]!=NULL && edb[year-FY][i][j][0]!=0 && edb[year-FY][i][j][0]!=' ') {
+             strncpy(spl, edb[year-FY][i][j], 6);
+             int tid = Tid(spl);
+             char evt = edb[year-FY][i][j][6];
+             if (tid>=0) {
+               if (evt == 34 || evt == 47) {
+                 if (tid==0) rhpen[arb]++;
+                 if (tid==1) rapen[arb]++;
+               }
+             }
+          }
+        }
 	}
 }
 
@@ -424,6 +496,8 @@ void HTMLTable() {
   fprintf(of, "<TH>Meciuri</TH>");
   fprintf(of, "<TH>Central</TH>");
   fprintf(of, "<TH>Linie</TH>");
+  fprintf(of, "<TH>Penalty</TH>");
+  fprintf(of, "<TH>Cartonaºe roºii</TH>");
   fprintf(of, "<TH>%%Gazde</TH>");
   fprintf(of, "</TR></THEAD>\n");
 
@@ -449,6 +523,8 @@ void HTMLTable() {
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ng);
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ng);
 			fprintf(of, "<TD ALIGN=\"right\">0</TD>");
+			fprintf(of, "<TD ALIGN=\"right\">%d - %d</TD>", rhpen[co], rapen[co]);
+			fprintf(of, "<TD ALIGN=\"right\"></TD>");
 			fprintf(of, "<TD ALIGN=\"right\">[%d%%]</TD>", (int)(100*s.pct()));
 			fprintf(of, "</TR>\n");
 		}
@@ -459,7 +535,7 @@ void HTMLTable() {
 	fclose(of);
 }
 
-void HTMLStatLine(FILE *of, int nl, Stat *s, int year) {
+void HTMLStatLine(FILE *of, int r, int nl, Stat *s, int year) {
 		char ssn[32];
 		SeasonName(year, ssn);
     fprintf(of, "\n<TR");
@@ -469,6 +545,12 @@ void HTMLStatLine(FILE *of, int nl, Stat *s, int year) {
 		fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s->numg());
 		fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s->numg());
 		fprintf(of, "<TD ALIGN=\"right\">0</TD>");
+        if (year==0) {
+  		  fprintf(of, "<TD ALIGN=\"right\">%d-%d</TD>", rhpen[r], rapen[r]);
+        } else {
+  		  fprintf(of, "<TD ALIGN=\"right\"></TD>");
+        }
+		fprintf(of, "<TD ALIGN=\"right\"></TD>");
 		fprintf(of, "<TD ALIGN=\"right\">[%d%%]</TD>", (int)(100*s->pct()));
 		fprintf(of, "</TR>\n");
 }
@@ -506,6 +588,8 @@ void HTMLReferee(int c) {
   fprintf(of, "<TH>Meciuri</TH>");
   fprintf(of, "<TH>Central</TH>");
   fprintf(of, "<TH>Linie</TH>");
+  fprintf(of, "<TH>Penalty</TH>");
+  fprintf(of, "<TH>Cartonaºe roºii</TH>");
   fprintf(of, "<TH>%%Gazde</TH>");
   fprintf(of, "</TR></THEAD>\n");
 
@@ -526,11 +610,11 @@ void HTMLReferee(int c) {
 				curr->addRes(x,z);
 			}
 		}
-		HTMLStatLine(of, ++nl, curr, year);
+		HTMLStatLine(of, c, ++nl, curr, year);
     total->add(curr);
     curr->reset();
 	}
-	HTMLStatLine(of, ++nl, total, 0);
+	HTMLStatLine(of, c, ++nl, total, 0);
 
   fprintf(of, "</TABLE>\n");
 
@@ -599,6 +683,7 @@ int main(int argc, char **argv) {
   for (int year = FY; year<=LY; ++year) {
 		LoadSeason(year);
 		LoadDB(year);
+		LoadEvents(year);
 		qSortDB(year);
 		CollectData(year);
   }
