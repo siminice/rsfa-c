@@ -478,6 +478,7 @@ int *ppen;
 int *pmin;
 int *pown;
 int *prec;
+int *pred;
 int *rank;
 
 int borna[256];
@@ -562,6 +563,7 @@ void LoadPlayers() {
   pmin = new int[MAX_NAMES];
   pown = new int[MAX_NAMES];
   prec = new int[MAX_NAMES];
+  pred = new int[MAX_NAMES];
   rank = new int[MAX_NAMES];
   echn = new int[MAX_NAMES];
 
@@ -606,7 +608,7 @@ void LoadPlayers() {
        borna[c] = i;
      }
      psez[i] = pfy[i] = ply[i] = pmeci[i] = ptit[i] = prez[i] = pgol[i] = 0;
-		 pmin[i] = ppen[i] = pown[i] = prec[i] = 0;
+		 pmin[i] = ppen[i] = pown[i] = prec[i] = pred[i] = 0;
      echn[i] = 0;
      rank[i] = i;
 	 clist[i][0] = 0;
@@ -624,7 +626,7 @@ void LoadPlayers() {
 void ResetStats() {
   for (int i=0; i<NP; i++) {
      psez[i] = pfy[i] = ply[i] = pmeci[i] = ptit[i] = prez[i] = pgol[i] = 0;
-		 pmin[i] = ppen[i] = pown[i] = prec[i] = 0;
+		 pmin[i] = ppen[i] = pown[i] = prec[i] = pred[i] = 0;
      rank[i] = i;
   }
 }
@@ -991,7 +993,7 @@ void MergeDB(int year) {
 }
 
 void TeamStats(int year, int t, int pl) {
-  int sm, st, sr, sg, sn, sp, sa, sh, xt;
+  int sm, st, sr, sg, sn, sp, sa, sh, scr, xt;
   int n = year - CFY;
   int i = 0;
 
@@ -1013,24 +1015,27 @@ void TeamStats(int year, int t, int pl) {
     }
     sm = st = sr = sg = 0;
     sn = sp = sa = sh = 0;
-    if (ccdb[n][i][CAT_CAPS])   sm = atoi(ccdb[n][i][CAT_CAPS]);
-    if (ccdb[n][i][CAT_START])  st = atoi(ccdb[n][i][CAT_START]);
-    if (ccdb[n][i][CAT_SUB])    sr = atoi(ccdb[n][i][CAT_SUB]);
-    if (ccdb[n][i][CAT_GOALS])  sg = atoi(ccdb[n][i][CAT_GOALS]);
-    if (ccdb[n][i][CAT_MIN])    sn = atoi(ccdb[n][i][CAT_MIN]);
-    if (ccdb[n][i][CAT_PK])     sp = atoi(ccdb[n][i][CAT_PK]);
-    if (ccdb[n][i][CAT_OWN])    sa = atoi(ccdb[n][i][CAT_OWN]);
-    if (ccdb[n][i][CAT_GREC])   sh = atoi(ccdb[n][i][CAT_GREC]);
+    scr = 0;
+    if (ccdb[n][i][CAT_CAPS])   sm  = atoi(ccdb[n][i][CAT_CAPS]);
+    if (ccdb[n][i][CAT_START])  st  = atoi(ccdb[n][i][CAT_START]);
+    if (ccdb[n][i][CAT_SUB])    sr  = atoi(ccdb[n][i][CAT_SUB]);
+    if (ccdb[n][i][CAT_GOALS])  sg  = atoi(ccdb[n][i][CAT_GOALS]);
+    if (ccdb[n][i][CAT_MIN])    sn  = atoi(ccdb[n][i][CAT_MIN]);
+    if (ccdb[n][i][CAT_PK])     sp  = atoi(ccdb[n][i][CAT_PK]);
+    if (ccdb[n][i][CAT_OWN])    sa  = atoi(ccdb[n][i][CAT_OWN]);
+    if (ccdb[n][i][CAT_GREC])   sh  = atoi(ccdb[n][i][CAT_GREC]);
+    if (ccdb[n][i][CAT_RED])    scr = atoi(ccdb[n][i][CAT_RED]);
 
     if (year !=1957) {
       pmeci[p] += sm;
       ptit[p]  += st;
       prez[p]  += sr;
       pgol[p]  += sg;
-			pmin[p]  += sn;
-			ppen[p]  += sp;
-			pown[p]  += sa;
-			prec[p]  += sh;
+	  pmin[p]  += sn;
+	  ppen[p]  += sp;
+	  pown[p]  += sa;
+	  prec[p]  += sh;
+      pred[p]  += scr;
     }
 
     if (sm>0) {
@@ -1101,6 +1106,7 @@ void HTMLLineupsHeader() {
   fprintf(of, "<TH>Pen</TH>");
   fprintf(of, "<TH>Auto</TH>");
   fprintf(of, "<TH>Gol/-</TH>");
+  fprintf(of, "<TH>Elim</TH>");
   fprintf(of, "</TR></THEAD>\n");
 }
 
@@ -1198,6 +1204,7 @@ void YearlyTeamStats(int t, int year) {
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_PK]);
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_OWN]);
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_GREC]);
+ 	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_RED]);
 	    fprintf(of, "</TR>\n");
 			j++;
 		}
@@ -1208,7 +1215,7 @@ void YearlyTeamStats(int t, int year) {
 }
 
 void CupStats(int year, int t) {
-  int sm, st, sr, sg, sn, sp, sa, sh, xt;
+  int sm, st, sr, sg, sn, sp, sa, sh, scr, xt;
   int n = year - KFY;
   int i = 0;
 
@@ -1224,6 +1231,7 @@ void CupStats(int year, int t) {
 
     sm = st = sr = sg = 0;
     sn = sp = sa = sh = 0;
+    scr = 0;
     if (ckdb[n][i][CAT_CAPS])   sm = atoi(ckdb[n][i][CAT_CAPS]);
     if (ckdb[n][i][CAT_START])  st = atoi(ckdb[n][i][CAT_START]);
     if (ckdb[n][i][CAT_SUB])    sr = atoi(ckdb[n][i][CAT_SUB]);
@@ -1232,6 +1240,7 @@ void CupStats(int year, int t) {
     if (ckdb[n][i][CAT_PK])     sp = atoi(ckdb[n][i][CAT_PK]);
     if (ckdb[n][i][CAT_OWN])    sa = atoi(ckdb[n][i][CAT_OWN]);
     if (ckdb[n][i][CAT_GREC])   sh = atoi(ckdb[n][i][CAT_GREC]);
+    if (ckdb[n][i][CAT_RED])   scr = atoi(ckdb[n][i][CAT_RED]);
 
       pmeci[p] += sm;
       ptit[p]  += st;
@@ -1241,6 +1250,7 @@ void CupStats(int year, int t) {
       ppen[p]  += sp;
       pown[p]  += sa;
       prec[p]  += sh;
+      pred[p]  += scr;
 
     if (sm>0) {
       if (year!=pfy[p] && year!=ply[p]) psez[p]++;
@@ -1255,6 +1265,7 @@ void CupStats(int year, int t) {
 void EuroStats(int year, int t) {
   int sm, st, sr, sg, xt;
   int sn, sp, sa, sh;
+  int scr;
   int n = year - EFY;
   int i = 0;
 
@@ -1275,6 +1286,7 @@ void EuroStats(int year, int t) {
 
     sm = st = sr = sg = 0;
     sn = sp = sa = sh = 0;
+    scr = 0;
     if (cedb[n][i][CAT_CAPS])   sm = atoi(cedb[n][i][CAT_CAPS]);
     if (cedb[n][i][CAT_START])  st = atoi(cedb[n][i][CAT_START]);
     if (cedb[n][i][CAT_SUB])    sr = atoi(cedb[n][i][CAT_SUB]);
@@ -1283,6 +1295,7 @@ void EuroStats(int year, int t) {
     if (cedb[n][i][CAT_PK])     sp = atoi(cedb[n][i][CAT_PK]);
     if (cedb[n][i][CAT_OWN])    sa = atoi(cedb[n][i][CAT_OWN]);
     if (cedb[n][i][CAT_GREC])   sh = atoi(cedb[n][i][CAT_GREC]);
+    if (cedb[n][i][CAT_RED])   scr = atoi(cedb[n][i][CAT_RED]);
 
       pmeci[p] += sm;
       ptit[p]  += st;
@@ -1292,6 +1305,7 @@ void EuroStats(int year, int t) {
       ppen[p]  += sp;
       pown[p]  += sa;
       prec[p]  += sh;
+      pred[p]  += scr;
 
     if (sm>0) {
       if (year!=pfy[p] && year!=ply[p]) psez[p]++;
@@ -1307,6 +1321,7 @@ void EuroStats(int year, int t) {
 void NatStats(int year, int t) {
   int sm, st, sr, sg, xt;
   int sn, sp, sa, sh;
+  int scr;
   int n = year - NFY;
   int i = 0;
 
@@ -1328,6 +1343,7 @@ void NatStats(int year, int t) {
     if (cndb[n][i][CAT_PK])     sp = atoi(cndb[n][i][CAT_PK]);
     if (cndb[n][i][CAT_OWN])    sa = atoi(cndb[n][i][CAT_OWN]);
     if (cndb[n][i][CAT_GREC])   sh = atoi(cndb[n][i][CAT_GREC]);
+    if (cndb[n][i][CAT_RED])   scr = atoi(cndb[n][i][CAT_RED]);
 
       pmeci[p] += sm;
       ptit[p]  += st;
@@ -1337,6 +1353,7 @@ void NatStats(int year, int t) {
       ppen[p]  += sp;
       pown[p]  += sa;
       prec[p]  += sh;
+      pred[p]  += scr;
 
     if (year!=pfy[p] && year!=ply[p]) psez[p]++;
     if (pfy[p]==0) pfy[p] = year;
@@ -1395,7 +1412,7 @@ void Lineups(int year) {
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_PK]);
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_OWN]);
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_GREC]);
-
+    fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_RED]);
     fprintf(of, "</TR>\n");
 
     i++;
@@ -2209,17 +2226,14 @@ void HTMLTable(int t) {
   fprintf(of, "<TH>Primul</TH>");
   fprintf(of, "<TH>Ultimul</TH>");
   fprintf(of, "<TH>Meciuri</TH>");
-//	if (t!=TM_NATL) {
-	 fprintf(of, "<TH>Minute</TH>");
-//  }
- 	fprintf(of, "<TH>Titular</TH>");
- 	fprintf(of, "<TH>Rezervã</TH>");
- 	fprintf(of, "<TH>Goluri</TH>");
-//	if (t!=TM_NATL) {
-	 fprintf(of, "<TH>Pen</TH>");
- 	 fprintf(of, "<TH>Auto</TH>");
- 	 fprintf(of, "<TH>Gol/-</TH>");
-//	}
+  fprintf(of, "<TH>Minute</TH>");
+  fprintf(of, "<TH>Titular</TH>");
+  fprintf(of, "<TH>Rezervã</TH>");
+  fprintf(of, "<TH>Goluri</TH>");
+  fprintf(of, "<TH>Pen</TH>");
+  fprintf(of, "<TH>Auto</TH>");
+  fprintf(of, "<TH>Gol/-</TH>");
+  fprintf(of, "<TH>Elim</TH>");
   fprintf(of, "</TR></THEAD>\n");
 
   for (int i=0; i<NP; i++) {
@@ -2240,17 +2254,14 @@ void HTMLTable(int t) {
     fprintf(of, "<TD align=\"right\">%d</TD>", pfy[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", ply[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pmeci[x]);
-//		if (t!=TM_NATL) {
-    	fprintf(of, "<TD align=\"right\">%d</TD>", pmin[x]);
-//		}
+    fprintf(of, "<TD align=\"right\">%d</TD>", pmin[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", ptit[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", prez[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pgol[x]);
-//		if (t!=TM_NATL) {
-	   fprintf(of, "<TD align=\"right\">%d</TD>", ppen[x]);
- 	   fprintf(of, "<TD align=\"right\">%d</TD>", pown[x]);
- 	   fprintf(of, "<TD align=\"right\">%d</TD>", prec[x]);
-//		}
+	fprintf(of, "<TD align=\"right\">%d</TD>", ppen[x]);
+ 	fprintf(of, "<TD align=\"right\">%d</TD>", pown[x]);
+ 	fprintf(of, "<TD align=\"right\">%d</TD>", prec[x]);
+ 	fprintf(of, "<TD align=\"right\">%d</TD>", pred[x]);
     fprintf(of, "</TR>\n");
   }
   fprintf(of, "\n</TABLE>\n");
