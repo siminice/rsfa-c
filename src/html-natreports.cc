@@ -110,7 +110,7 @@ char rmnem[MAX_N][MAX_ROSTER][7];
 int  npl[MAX_N];
 
 int NP, NEP;
-int *psez, *pmeci, *ptit, *pint, *prez, *pban, *ppen, *pown, *prec, *pmin, *pgol, *pgre, *prnk;
+int *psez, *pmeci, *ptit, *pint, *prez, *pban, *ppen, *pown, *prec, *pred, *pmin, *pgol, *pgre, *prnk;
 int *csez, *cmeci, *ctit, *cint, *crez, *cban, *cmin, *cgol, *cgre, *crnk;
 int *pesez, *pemeci, *petit, *peint, *perez, *peban, *pemin, *pegol, *pegre, *pernk;
 int *cesez, *cemeci, *cetit, *ceint, *cerez, *ceban, *cemin, *cegol, *cegre, *cernk;
@@ -227,7 +227,7 @@ int Load() {
 void ResetStats() {
   for (int i=0; i<NP; i++) {
      psez[i] = pmeci[i] = ptit[i] = pint[i] = prez[i] = pban[i] = pmin[i] = pgol[i] = pgre[i] = 0;
-     ppen[i] = pown[i] = prec[i] = 0;
+     ppen[i] = pown[i] = prec[i] = pred[i] = 0;
      pesez[i] = pemeci[i] = petit[i] = peint[i] = perez[i] = peban[i] = pemin[i] = pegol[i] = pegre[i] = 0;
      pernk[i] = i;
   }
@@ -251,6 +251,7 @@ void InitStats() {
   ppen  = new int[MAX_NAMES];
   pown  = new int[MAX_NAMES];
   prec  = new int[MAX_NAMES];
+  pred  = new int[MAX_NAMES];
 
   csez  = new int[MAX_NAMES];
   cmeci = new int[MAX_NAMES];
@@ -1009,7 +1010,13 @@ void HTMLEventsBlock(int r, int a, int b) {
 					}
 				}
       }
-      if (evt[e]==EV_OWNGOAL) { cx++; }
+      else if (evt[e]==EV_OWNGOAL) {
+        cx++;
+        if (away==CTTY_ROM && pid>=0) { pown[pid]++; }
+      }
+      else if (evt[e]==EV_RED) {
+        if (home==CTTY_ROM && pid>=0) { pred[pid]++; }
+      }
       fprintf(of, "      <td class=\"event-icon\"><div>%d - %d</div></td>\n", cx, cy);
       fprintf(of, "      <td class=\"player player-b\">\n");
       fprintf(of, "        <div></div>\n");
@@ -1034,7 +1041,13 @@ void HTMLEventsBlock(int r, int a, int b) {
 				}
         cy++;
       }
-      if (evt[e]==EV_OWNGOAL) { cy++; }
+      else if (evt[e]==EV_OWNGOAL) {
+        cy++;
+        if (home==CTTY_ROM && pid>=0) { pown[pid]++; }
+      }
+      else if (evt[e]==EV_RED) {
+        if (away==CTTY_ROM && pid>=0) { pred[pid]++; }
+      }
       fprintf(of, "      <td class=\"event-icon\"><div>%d - %d</div></td>\n", cx, cy);
       fprintf(of, "      <td class=\"player player-b\">\n");
       fprintf(of, "        <div>");
@@ -1853,6 +1866,7 @@ void SynopticTable() {
   fprintf(f, "<TH>Pen</TH>");
   fprintf(f, "<TH>Auto</TH>");
   fprintf(f, "<TH>Gol/-</TH>");
+  fprintf(f, "<TH>Elim/-</TH>");
   fprintf(f, "</TR></THEAD>\n");
 	fprintf(f, "<TBODY>\n");
 
@@ -1880,6 +1894,7 @@ void SynopticTable() {
     fprintf(of, "<TD align=\"right\">%d</TD>", ppen[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pown[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", prec[x]);
+    fprintf(of, "<TD align=\"right\">%d</TD>", pred[x]);
     fprintf(of, "</TR>\n");
   }
 

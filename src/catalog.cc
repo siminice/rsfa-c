@@ -22,6 +22,7 @@ char low(char c) {
   return c;
 }
 
+/************************************/
 Stat::Stat() {
 	sez = champ = promo = releg = 0;
 	win = drw = los = gsc = gre = 0;
@@ -92,7 +93,103 @@ int Stat::sup(Stat *x, int rule) {
 	if (gsc>x->gsc) return -1;
 	return 1;
 }
+/************************************/
+PlayerStat::PlayerStat() {
+  reset();
+}
 
+void PlayerStat::reset() {
+	sez = fy = ly = champ = promo = releg = 0;
+	win = drw = los = gsc = gre = 0;
+    cap = min = tit = rez = ban = itg = cpt = 0;
+    gol = pen = per = pea = aut = gop = 0;
+    gal = ros = 0;
+}
+
+int PlayerStat::numg() {
+	return win+drw+los;
+}
+
+double PlayerStat::pct() {
+	int ng = win+drw+los;
+	if (ng==0) return 0.0;
+	return (win+0.5*drw)/ng;
+}
+
+void PlayerStat::addRes(int x, int y) {
+	gsc += x; gre += y;
+	if (x>y) ++win; else { if (x==y) ++drw; else ++los; }
+}
+
+void PlayerStat::addStat(PlayerStat *x) {
+    sez = x->sez;
+    fy = x->fy;
+    ly = x->ly;
+    champ = x->champ;
+    promo = x->promo;
+    releg = x->releg;
+
+    win = x->win;
+    drw = x->drw;
+    los = x->los;
+    gsc = x->gsc;
+    gre = x->gre;
+
+    cap = x->cap;
+    min = x->min;
+    tit = x->tit;
+    rez = x->rez;
+    ban = x->ban;
+    itg = x->itg;
+    cpt = x->cpt;
+
+    gol = x->gol;
+    pen = x->pen;
+    per = x->per;
+    pea = x->pea;
+    aut = x->aut;
+    gop = x->gop;
+
+    gal = x->gal;
+    ros = x->ros;
+}
+
+void addStats(char **ldb, char **edb, Catalog *p, int n) {
+}
+
+int PlayerStat::sup(PlayerStat *x, int rule) {
+	int ng1 = win+drw+los;
+	int ng2 = x->win+x->drw+x->los;
+	if (rule==RULE_NUMG) {
+		if (ng1>ng2) return -1;
+		else if (ng1==ng2) return 0;
+		else return 1;
+	}
+	if (rule==RULE_PCT) {
+		double pc1 = pct();
+		double pc2 = x->pct();
+		if (pc1>pc2) return -1;
+		if (pc1<pc2) return 1;
+		if (ng1>ng2) return -1;
+		else return 1;
+	}
+	int pt1 = 2*win+drw;
+	int pt2 = 2*x->win+x->drw;
+	if (pt1>pt2) return -1;
+	if (pt1<pt2) return 1;
+	if (pt1==0) {
+		if (ng1>0  && ng2==0) return -1;
+		if (ng1==0 && ng2>0)  return 1;
+	}
+	int gd1 = gsc-gre;
+	int gd2 = x->gsc-x->gre;
+	if (gd1>gd2) return -1;
+	if (gd1<gd2) return 1;
+	if (gsc>x->gsc) return -1;
+	return 1;
+}
+
+/************************************/
 Ranking::Ranking(int an) {
 	n = an;
 	S = new Stat[n];
@@ -148,6 +245,7 @@ void Ranking::bubbleSort(int rule) {
 	} while (!sorted);
 }
 
+/************************************/
 int Catalog::Load(const char *filename) {
   n = 0;
   int c;
@@ -455,6 +553,7 @@ char * Venue::getName(int year) {
 	return name;
 }
 
+/************************************/
 int Locations::Load(const char *cfilename, const char *vfilename) {
   char s[1024], *tk[100];
   nc = 0;
