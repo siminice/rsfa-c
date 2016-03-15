@@ -9,7 +9,8 @@
 #define TM_CUPA	-4
 #define EURO 1000
 #define NATIONALA 39000
-#define PSO_TIME 200
+#define PSO_TIME     200
+#define UNKNOWN_TIME 999
 
 int verbosity;
 int tm, pl, cr;
@@ -954,7 +955,7 @@ void ExtractLists(int year, char ****ldb, char ****edb) {
 				spi[6] = 0;
                 int evm = atoi(spi+7);
 				pid = binFindMnem(sp);
-				if (pid>=0 && evm < PSO_TIME) {
+				if (pid>=0 && (evm < PSO_TIME || evm == UNKNOWN_TIME)) {
 					elist[pid][clist[pid][0]]++;
 				}
 			}
