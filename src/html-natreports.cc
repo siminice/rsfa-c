@@ -80,7 +80,6 @@ const char *romonth[] = {"", "ianuarie", "februarie", "martie", "aprilie", "mai"
 const char *evicon[] = {"g", "og", "pg", "pm", "cg" , "cr", "cgr"};
 const char *cupmnem[] = {"SC", "CCE", "CC", "UEFA"};
 const char *cupround[] = {"Câºtigãtoare", "Finala", "Semifinale", "Sferturi", "Optimi", "ªaisprezecimi", "1/32", "1/64"};
-const char *cuprmnem[] = {" ", "F", "S", "Q", "O", "ª", "32", "64"};
 const char* fxcol[] = {"F0F0B0", "AAFFAA", "FF8888"};
 
 char **ctty;
@@ -998,17 +997,16 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "      </td>\n");
       if (evt[e]==EV_GOAL || evt[e]==EV_PKGOAL) {
         cx++;
-				if (pid>=0) {
-					if (home==CTTY_ROM) {
-		      pgol[pid]++;
-  		      cgol[pid]++;
-              if (evt[e] == EV_PKGOAL) { ppen[pid]++; }
-					}
-					else {
-		        pegol[pid-MAX_NAMES]++;
-  		        cegol[pid-MAX_NAMES]++;
-					}
-				}
+        if (pid>=0) {
+          if (home==CTTY_ROM) {
+		    pgol[pid]++;
+  		    cgol[pid]++;
+            if (evt[e] == EV_PKGOAL) { ppen[pid]++; }
+          } else {
+		    pegol[pid-MAX_NAMES]++;
+  		    cegol[pid-MAX_NAMES]++;
+          }
+        }
       }
       else if (evt[e]==EV_OWNGOAL) {
         cx++;
@@ -1029,16 +1027,16 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "        <div></div>\n");
       fprintf(of, "      </td>\n");
       if (evt[e]==EV_GOAL || evt[e]==EV_PKGOAL) {
-				if (pid>=0) {
-					if (away==CTTY_ROM) {
-		          pgol[pid]++;
- 	 		      cgol[pid]++;
-					}
-					else {
-		          pegol[pid-MAX_NAMES]++;
- 	 		      cegol[pid-MAX_NAMES]++;
-					}
-				}
+        if (pid>=0) {
+          if (away==CTTY_ROM) {
+            pgol[pid]++;
+            cgol[pid]++;
+            if (evt[e] == EV_PKGOAL) { ppen[pid]++; }
+          } else {
+		    pegol[pid-MAX_NAMES]++;
+ 	 		cegol[pid-MAX_NAMES]++;
+          }
+        }
         cy++;
       }
       else if (evt[e]==EV_OWNGOAL) {
@@ -1053,14 +1051,13 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "        <div>");
       fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/>%s</span>  ", evicon[evt[e]], sm);
       if (pid>=0) {
-				if (pid<MAX_NAMES) {
-					HTMLPlayerLink(pid, PL_FULL_NAME);
-				}
-				else {
-					HTMLEuroPlayerLink(pid-MAX_NAMES, PL_FULL_NAME);
-				}
-			}
-			else fprintf(of, "%s", rname[evp[e]]+1);
+        if (pid<MAX_NAMES) {
+          HTMLPlayerLink(pid, PL_FULL_NAME);
+        } else {
+          HTMLEuroPlayerLink(pid-MAX_NAMES, PL_FULL_NAME);
+        }
+      }
+      else fprintf(of, "%s", rname[evp[e]]+1);
       fprintf(of, "</div>\n");
       fprintf(of, "      </td>\n");
       fprintf(of, "      </td>\n");
@@ -1106,7 +1103,7 @@ void HTMLPenaltyBlock(int r, int a, int b) {
 				else HTMLEuroPlayerLink(pid-MAX_NAMES, PL_FULL_NAME);
 			}
 			else fprintf(of, "%s", rname[evp[e]]+1);
-      fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/></span>  &nbsp;</div>\n", evicon[evt[e]]);
+      fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/></span>  &nbsp;</div>\n", evt[e]==EV_PKGOAL?"g":"pm");
       fprintf(of, "      </td>\n");
       if (evt[e]==EV_PKGOAL) {
         cx++;
@@ -1128,7 +1125,7 @@ void HTMLPenaltyBlock(int r, int a, int b) {
       fprintf(of, "      <td class=\"event-icon\"><div>%d - %d</div></td>\n", cx, cy);
       fprintf(of, "      <td class=\"player player-b\">\n");
       fprintf(of, "        <div>");
-      fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/></span>  ", evicon[evt[e]]);
+      fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/></span>  ", evt[e]==EV_PKGOAL?"g":"pm");
       if (pid>=0) {
 				if (pid<MAX_NAMES) {
 					HTMLPlayerLink(pid, PL_FULL_NAME);
@@ -1630,14 +1627,14 @@ void PrintReport(int r) {
   fclose(of);
 }
 
-void Ranking(int cr) {
+void PlayerRanking(int cr) {
   int sorted, last;
-	nnp = 0;
-	for (int i=0; i<NP; ++i) {
-		if (pmeci[i]>0) {
-			npid[nnp++] = i;
-		}
-	}
+  nnp = 0;
+  for (int i=0; i<NP; ++i) {
+    if (pmeci[i]>0) {
+      npid[nnp++] = i;
+    }
+  }
   for (int i=0; i<nnp; i++) rank[i] = i;
 
   last = nnp-1;
@@ -1713,20 +1710,20 @@ void SynopticTable() {
 		return;
 	}
 
-	fprintf(f, "<HTML>\n");
+  fprintf(f, "<HTML>\n");
   fprintf(f, "<HEAD>\n<link href=\"css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(f, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
-	fprintf(f, "</HEAD>\n");
-	fprintf(f, "<BODY>\n");
+  fprintf(f, "</HEAD>\n");
+  fprintf(f, "<BODY>\n");
 
-	fprintf(f, "<H2>");
+  fprintf(f, "<H2>");
   fprintf(f, "<A HREF=nationala.html><IMG HEIGHT=\"20\" SRC=\"home.gif\"></A>");
   if (year>NFY)
     fprintf(f, "<A HREF=nat-%d.html><IMG HEIGHT=\"20\" SRC=\"prev.gif\"></A>", year-1);
-	fprintf(f, " Echipa naþionalã în %d ", year);
+  fprintf(f, " Echipa naþionalã în %d ", year);
   if (year<NLY)
     fprintf(f, "<A HREF=nat-%d.html><IMG HEIGHT=\"20\" SRC=\"next.gif\"></A>", year+1);
-	fprintf(f, "</H2>");
+  fprintf(f, "</H2>");
   fprintf(f, "<TABLE WIDTH=\"80%%\" cellpadding=\"1\" frame=\"box\">\n");
   fprintf(f, "<THEAD>\n");
   fprintf(f, "<TR BGCOLOR=\"DDDDDD\">\n");
@@ -1848,7 +1845,7 @@ void SynopticTable() {
 	fprintf(f, "</TBODY>");
 	fprintf(f, "</TABLE>\n");
 
-	fprintf(f, "<H3>Jucãtori folosiþi</H3>\n");
+  fprintf(f, "<H3>Jucãtori folosiþi</H3>\n");
   fprintf(f, "<script src=\"sorttable.js\"></script>\n");
   fprintf(f, "<TABLE class=\"sortable\" cellpadding=\"2\" frame=\"box\">\n");
   fprintf(f, "<THEAD><TR>\n");
@@ -1868,15 +1865,15 @@ void SynopticTable() {
   fprintf(f, "<TH>Gol/-</TH>");
   fprintf(f, "<TH>Elim/-</TH>");
   fprintf(f, "</TR></THEAD>\n");
-	fprintf(f, "<TBODY>\n");
+  fprintf(f, "<TBODY>\n");
 
-	Ranking(1);
+  PlayerRanking(1);
 
   for (int i=0; i<nnp; i++) {
     int x = npid[rank[i]];
     if (pmeci[x]==0) continue;
     fprintf(of, "<TR");
-    if (i%2==1) fprintf(of, " BGCOLOR=\"DDFFFF\"");
+    if (i%2==1) fprintf(of, " BGCOLOR=\"DDDDDD\"");
     fprintf(of, ">");
     fprintf(of, "<TD align=\"right\">%d.</TD>", i+1);
     fprintf(of, "<TD align=\"left\">%s</TD>", Pl.P[x].pren);
@@ -1898,16 +1895,15 @@ void SynopticTable() {
     fprintf(of, "</TR>\n");
   }
 
-	fprintf(f, "</TBODY>\n");
-	fprintf(f, "</TABLE>");
+  fprintf(f, "</TBODY>\n");
+  fprintf(f, "</TABLE>");
+  fprintf(f, "</BODY>\n</HTML>\n");
+  fclose(f);
 
-	fprintf(f, "</BODY>\n</HTML>\n");
-	fclose(f);
-
-	nrept = 0;
-	for (int i=0; i<MAX_N; i++) {
-		for (int j=0; j<MAX_N; j++) nrep[i][j] = 0;
-	}
+  nrept = 0;
+  for (int i=0; i<MAX_N; i++) {
+    for (int j=0; j<MAX_N; j++) nrep[i][j] = 0;
+  }
 }
 
 //---------------------------------------------
@@ -1953,15 +1949,15 @@ int main(int argc, char* argv[]) {
   Loc.Load("city.dat", "stadium.dat");
   ELoc.Load("eurocity.dat", "eurostadium.dat");
 
-	for (int i=0; i<NM; i++) {
-		PrintReport(i);
-	}
+  for (int i=0; i<NM; i++) {
+    PrintReport(i);
+  }
 
-	for (int i=0; i<MAX_N; i++) {
-		for (int j=0; j<MAX_N; j++) nrep[i][j] = 0;
-	}
+  for (int i=0; i<MAX_N; i++) {
+    for (int j=0; j<MAX_N; j++) nrep[i][j] = 0;
+  }
 
-	SynopticTable();
+  SynopticTable();
   SaveAccumulatedStats();
 
   return 0;
