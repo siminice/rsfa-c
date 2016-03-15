@@ -40,14 +40,15 @@
 #define DB_T1		 8
 #define DB_T2		31
 
-#define EV_GOAL		 0
-#define EV_OWNGOAL	 1
-#define EV_PKGOAL	 2
-#define EV_PKMISS	 3
-#define EV_YELLOW	 4
-#define EV_RED	 	 5
-#define EV_YELLOWRED 6
-#define PSO_TIME    200
+#define EV_GOAL		   0
+#define EV_OWNGOAL	   1
+#define EV_PKGOAL	   2
+#define EV_PKMISS	   3
+#define EV_YELLOW	   4
+#define EV_RED	 	   5
+#define EV_YELLOWRED   6
+#define PSO_TIME     200
+#define UNKNOWN_TIME 999
 
 //burdca,Carol,Burdan,00/00/1912,ROM,173, , ,3,3,0,-11
 #define CAT_MNEM	 0
@@ -811,7 +812,7 @@ void GetEvents(int r, int a, int b) {
 			if (ep<0) ep = -(i+1);
 		} else ep=-100;
     if (ep>=0 || em>=0) {
-      if (em==0) em=999;
+      if (em==0) em=UNKNOWN_TIME;
       evp[i] = ep; evm[i] = em; evt[i] = EV_GOAL;
 			if (edb[r][i][0]=='~') {
 				if (strchr(edb[r][i], '`')) evt[i] = EV_OWNGOAL;
@@ -822,7 +823,7 @@ void GetEvents(int r, int a, int b) {
       	else if (edb[r][i][6]=='"') evt[i] = EV_PKGOAL;
       	else if (edb[r][i][6]=='/') evt[i] = EV_PKMISS;
 			}
-      if (em < PSO_TIME) nrev++; else pso = 1;
+      if (em < PSO_TIME || em == UNKNOWN_TIME) nrev++; else pso = 1;
       nev++;
     }
   }
@@ -880,14 +881,12 @@ void HTMLEventsBlock(int r, int a, int b) {
   int hsc;
   char sm[12];
   for (int e=0; e<nrev; e++) {
-    if (evm[e] > PSO_TIME) continue;
-    if (evm[e]>0 && evm[e]<=150) sprintf(sm, "%2d'", evm[e]); else sprintf(sm, " ");
-    /* only for regular time */
-//    if (evm[e]>90 && evm[e]<120) sprintf(sm, "90+%d'", evm[e]%90);
-    if (evp[e]>=0 && evp[e]<44) pid = roster[evp[e]]; else pid = -1;
+    if (evm[e] > PSO_TIME && evm[e] < PSO_TIME+100) continue;
+    if (evm[e]>0 && evm[e]<PSO_TIME) sprintf(sm, "%2d'", evm[e]); else sprintf(sm, " ");
+    if (evp[e]>=0 && evp[e]<2*ROSTER_SIZE) pid = roster[evp[e]]; else pid = -1;
     hsc = 2;
-    if (evp[e]>= 0 && evp[e]<22) hsc = 1;
-    if (evp[e]>=22 && evp[e]<44) hsc = 0;
+    if (evp[e]>= 0 && evp[e]<ROSTER_SIZE) hsc = 1;
+    if (evp[e]>=ROSTER_SIZE && evp[e]<2*ROSTER_SIZE) hsc = 0;
     if (evt[e]==EV_OWNGOAL) {
       hsc = 1-hsc;
     }
@@ -895,16 +894,15 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "    <tr class=\"event    expanded\">\n");
       fprintf(of, "      <td class=\"player player-a\">\n");
       fprintf(of, "        <div>");
-      if (pid>=0) HTMLPlayerLink(pid, PL_FULL_NAME);
-			else fprintf(of, "%s", rname[evp[e]]+1);
+      if (pid>=0) HTMLPlayerLink(pid, PL_FULL_NAME); else fprintf(of, "%s", rname[evp[e]]+1);
       fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/>%s</span>  &nbsp;</div>\n", evicon[evt[e]], sm);
       fprintf(of, "      </td>\n");
       if (evt[e]==EV_GOAL || evt[e]==EV_PKGOAL) {
         cx++;
-				if (pid>=0) {
-	        pgol[pid]++;
+        if (pid>=0) {
+          pgol[pid]++;
   	      cgol[pid]++;
-				}
+        }
       }
       if (evt[e]==EV_OWNGOAL) { cx++; }
       fprintf(of, "      <td class=\"event-icon\"><div>%d - %d</div></td>\n", cx, cy);
@@ -919,10 +917,10 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "        <div></div>\n");
       fprintf(of, "      </td>\n");
       if (evt[e]==EV_GOAL || evt[e]==EV_PKGOAL) {
-				if (pid>=0) {
-	        pgol[pid]++;
+        if (pid>=0) {
+	      pgol[pid]++;
   	      cgol[pid]++;
-				}
+        }
         cy++;
       }
       if (evt[e]==EV_OWNGOAL) { cy++; }
@@ -930,40 +928,13 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "      <td class=\"player player-b\">\n");
       fprintf(of, "        <div>");
       fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/>%s</span>  ", evicon[evt[e]], sm);
-      if (pid>=0) HTMLPlayerLink(pid, PL_FULL_NAME);
-			else fprintf(of, "%s", rname[evp[e]]+1);
+      if (pid>=0) HTMLPlayerLink(pid, PL_FULL_NAME); else fprintf(of, "%s", rname[evp[e]]+1);
       fprintf(of, "</div>\n");
       fprintf(of, "      </td>\n");
       fprintf(of, "      </td>\n");
       fprintf(of, "    </tr>\n");
     }
   }
-/*
-  for (int i=0; i<x; i++) {
-    fprintf(of, "    <tr class=\"event    expanded\">\n");
-    fprintf(of, "      <td class=\"player player-a\">\n");
-    fprintf(of, "        <div>Marcator gazde #%d <span class=\"minute\">m'</span>  &nbsp;</div>\n", i+1);
-    fprintf(of, "      </td>\n");
-    fprintf(of, "      <td class=\"event-icon\"><div>%d - 0</div></td>\n", i+1);
-    fprintf(of, "      <td class=\"player player-b\">\n");
-    fprintf(of, "        <div></div>\n");
-    fprintf(of, "      </td>\n");
-    fprintf(of, "    </tr>\n");
-  }
-
-  for (int i=0; i<y; i++) {
-    fprintf(of, "    <tr class=\"event    expanded\">\n");
-    fprintf(of, "      <td class=\"player player-a\">\n");
-    fprintf(of, "        <div></div>\n");
-    fprintf(of, "      </td>\n");
-    fprintf(of, "      <td class=\"event-icon\"><div>%d - %d</div></td>\n", x, i+1);
-    fprintf(of, "      <td class=\"player player-b\">\n");
-    fprintf(of, "        <div>Marcator oaspeþi #%d <span class=\"minute\">m'</span>  &nbsp;</div>\n", i+1);
-    fprintf(of, "      </td>\n");
-    fprintf(of, "    </tr>\n");
-  }
-*/
-
   fprintf(of, "  </table>\n\n");
 
   fprintf(of, "      </div>\n");
@@ -1000,7 +971,7 @@ void HTMLPenaltyBlock(int r, int a, int b) {
       fprintf(of, "        <div>");
       if (pid>=0) HTMLPlayerLink(pid, PL_FULL_NAME);
 			else fprintf(of, "%s", rname[evp[e]]+1);
-      fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/></span>  &nbsp;</div>\n", evicon[evt[e]]);
+      fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/></span>  &nbsp;</div>\n", evt[e]==EV_PKGOAL?"g":"pm");
       fprintf(of, "      </td>\n");
       if (evt[e]==EV_PKGOAL) {
         cx++;
@@ -1022,7 +993,7 @@ void HTMLPenaltyBlock(int r, int a, int b) {
       fprintf(of, "      <td class=\"event-icon\"><div>%d - %d</div></td>\n", cx, cy);
       fprintf(of, "      <td class=\"player player-b\">\n");
       fprintf(of, "        <div>");
-      fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/></span>  ", evicon[evt[e]]);
+      fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/></span>  ", evt[e]==EV_PKGOAL?"g":"pm");
       if (pid>=0) HTMLPlayerLink(pid, PL_FULL_NAME);
 			else fprintf(of, "%s", rname[evp[e]]+1);
       fprintf(of, "</div>\n");
