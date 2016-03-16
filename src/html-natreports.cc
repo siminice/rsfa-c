@@ -405,13 +405,13 @@ void AddStats(int px, int k, int m) {
   if (m>0) { pmeci[px]++; cmeci[px]++; }
   if (k>=1 && k<=11) {
     ptit[px]++; ctit[px]++;
-    if (m==90) { pint[px]++; cint[px]++; }
+    if (m>=90) { pint[px]++; cint[px]++; }
   }
-  else if (k>=12 && k<=14) {
-    if (m>0) { prez[px]++; crez[px]++; }
-  }
-  else if (k<=ROSTER_SIZE) {
-    if (m==0) { pban[px]++; cban[px]++; }
+  else {
+    if (m>0)
+      { prez[px]++; crez[px]++; }
+    else
+      { pban[px]++; cban[px]++; }
   }
 }
 
@@ -423,13 +423,13 @@ void AddEuroStats(int px, int k, int m) {
   if (m>0) { pemeci[px]++; cemeci[px]++; }
   if (k>=1 && k<=11) {
     petit[px]++; cetit[px]++;
-    if (m==90) { peint[px]++; ceint[px]++; }
+    if (m>=90) { peint[px]++; ceint[px]++; }
   }
-  else if (k>=12 && k<=14) {
-    if (m>0) { perez[px]++; cerez[px]++; }
-  }
-  else if (k<=ROSTER_SIZE) {
-    if (m==0) { peban[px]++; ceban[px]++; }
+  else {
+    if (m>0)
+      { perez[px]++; cerez[px]++; }
+    else
+     { peban[px]++; ceban[px]++; }
   }
 }
 
@@ -1883,7 +1883,7 @@ void SynopticTable() {
     int x = npid[rank[i]];
     if (pmeci[x]==0) continue;
     fprintf(of, "<TR");
-    if (i%2==1) fprintf(of, " BGCOLOR=\"DDDDDD\"");
+    if (i%2==1) fprintf(of, " BGCOLOR=\"EEEEEE\"");
     fprintf(of, ">");
     fprintf(of, "<TD align=\"right\">%d.</TD>", i+1);
     fprintf(of, "<TD align=\"left\">%s</TD>", Pl.P[x].pren);
