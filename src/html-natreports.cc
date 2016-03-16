@@ -89,10 +89,10 @@ int  asez[MAX_TEAMS], awin[MAX_TEAMS], adrw[MAX_TEAMS], alos[MAX_TEAMS], agre[MA
 char flag[12], compname[64], roundname[64];
 int  year, score, home, away;
 
-int  roster[2*ROSTER_SIZE], annotation[2*ROSTER_SIZE];
+int  roster[2*ROSTER_SIZE], annotation[2*ROSTER_SIZE], rmin[2*ROSTER_SIZE];
+char rname[2*ROSTER_SIZE][DB_CELL];
 int  overtime;
 int  nrev, nev, pso, evp[EV_COLS], evm[EV_COLS], evt[EV_COLS];
-char rname[2*ROSTER_SIZE][DB_CELL];
 Stat RH, RA, RN, RT;
 int host;
 
@@ -813,6 +813,7 @@ void ResetRoster() {
   for (int i=0; i<2*ROSTER_SIZE; i++) {
     roster[i] = -1;
     annotation[i] = 0;
+    rmin[i] = -1;
   }
   overtime = 0;
 }
@@ -825,29 +826,29 @@ void GetRoster(int r, int a, int b) {
     strcpy(s, db[r][i]);
     sp = strtok(s, ":");
     sm = strtok(NULL, ",\n");
-		if (sp) strncpy(rname[i-DB_ROSTER1], sp, DB_CELL-1);
-			else strcpy(rname[i-DB_ROSTER1], "?");
+    if (sp) strncpy(rname[i-DB_ROSTER1], sp, DB_CELL-1); else strcpy(rname[i-DB_ROSTER1], "?");
     if (sm) rm = atoi(sm); else rm=-1;
     if (sp) {
-			if (home==CTTY_ROM) rp = Pl.FindMnem(sp);
-			else rp =  EPl.FindMnem(sp)+MAX_NAMES;
-		}
-		else rp=-1;
+      if (home==CTTY_ROM) rp = Pl.FindMnem(sp); else rp =  EPl.FindMnem(sp)+MAX_NAMES;
+    }
+    else rp=-1;
     if (rm>=0 && rp>=0) roster[i-DB_ROSTER1] = rp;
+    rmin[i-DB_ROSTER1] = rm;
   }
   for (int i=DB_ROSTER2; i<DB_COACH2; i++) {
     strcpy(s, db[r][i]);
     sp = strtok(s, ":");
     sm = strtok(NULL, ",\n");
-		if (sp) strncpy(rname[ROSTER_SIZE+i-DB_ROSTER2], sp, DB_CELL-1);
-			else strcpy(rname[ROSTER_SIZE+i-DB_ROSTER2], "?");
+    if (sp) strncpy(rname[ROSTER_SIZE+i-DB_ROSTER2], sp, DB_CELL-1);
+    else strcpy(rname[ROSTER_SIZE+i-DB_ROSTER2], "?");
     if (sm) rm = atoi(sm); else rm=-1;
     if (sp) {
-			if (away==CTTY_ROM) rp = Pl.FindMnem(sp);
-			else rp = EPl.FindMnem(sp)+MAX_NAMES;
-		}
-		else rp=-1;
+      if (away==CTTY_ROM) rp = Pl.FindMnem(sp);
+      else rp = EPl.FindMnem(sp)+MAX_NAMES;
+    }
+    else rp=-1;
     if (rm>=0 && rp>=0) roster[ROSTER_SIZE+i-DB_ROSTER2] = rp;
+    rmin[ROSTER_SIZE+i-DB_ROSTER2] = rm;
   }
 }
 
@@ -867,6 +868,10 @@ int RosterMnem(int r, int i) {
 		if (strcmp(scn, rname[j])==0) return j;
 	}
 	return -1;
+}
+
+int Gkid(int t, int m) {
+  return rmin[ROSTER_SIZE*t]>=m || m>=999 ? roster[t*ROSTER_SIZE] : roster[t*ROSTER_SIZE+11];
 }
 
 void ResetEvents() {
@@ -989,14 +994,15 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "      <td class=\"player player-a\">\n");
       fprintf(of, "        <div>");
       if (pid>=0) {
-				if (pid<MAX_NAMES) HTMLPlayerLink(pid, PL_FULL_NAME);
-				else HTMLEuroPlayerLink(pid-MAX_NAMES, PL_FULL_NAME);
-			}
-			else fprintf(of, "%s", rname[evp[e]]+1);
+        if (pid<MAX_NAMES) HTMLPlayerLink(pid, PL_FULL_NAME); else HTMLEuroPlayerLink(pid-MAX_NAMES, PL_FULL_NAME);
+      }
+      else fprintf(of, "%s", rname[evp[e]]+1);
       fprintf(of, "<span class=\"minute\"><img src=\"../../%s.png\"/>%s</span>  &nbsp;</div>\n", evicon[evt[e]], sm);
       fprintf(of, "      </td>\n");
+      int gki = Gkid(1, evm[e]);
       if (evt[e]==EV_GOAL || evt[e]==EV_PKGOAL) {
         cx++;
+        if (away==CTTY_ROM && gki>=0) prec[gki]++;
         if (pid>=0) {
           if (home==CTTY_ROM) {
 		    pgol[pid]++;
@@ -1011,6 +1017,7 @@ void HTMLEventsBlock(int r, int a, int b) {
       else if (evt[e]==EV_OWNGOAL) {
         cx++;
         if (away==CTTY_ROM && pid>=0) { pown[pid]++; }
+        if (away==CTTY_ROM && gki>=0) { prec[gki]++; }
       }
       else if (evt[e]==EV_RED) {
         if (home==CTTY_ROM && pid>=0) { pred[pid]++; }
@@ -1026,7 +1033,9 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "      <td class=\"player player-a\">\n");
       fprintf(of, "        <div></div>\n");
       fprintf(of, "      </td>\n");
+      int gki = Gkid(0, evm[e]);
       if (evt[e]==EV_GOAL || evt[e]==EV_PKGOAL) {
+        if (home==CTTY_ROM && gki>=0) prec[gki]++;
         if (pid>=0) {
           if (away==CTTY_ROM) {
             pgol[pid]++;
@@ -1042,6 +1051,7 @@ void HTMLEventsBlock(int r, int a, int b) {
       else if (evt[e]==EV_OWNGOAL) {
         cy++;
         if (home==CTTY_ROM && pid>=0) { pown[pid]++; }
+        if (home==CTTY_ROM && gki>=0) { prec[gki]++; }
       }
       else if (evt[e]==EV_RED) {
         if (away==CTTY_ROM && pid>=0) { pred[pid]++; }
@@ -1889,8 +1899,8 @@ void SynopticTable() {
     fprintf(of, "<TD align=\"right\">%d</TD>", prez[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pgol[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", ppen[x]);
-    fprintf(of, "<TD align=\"right\">%d</TD>", pown[x]);
-    fprintf(of, "<TD align=\"right\">%d</TD>", prec[x]);
+    fprintf(of, "<TD align=\"right\">%d</TD>", -pown[x]);
+    fprintf(of, "<TD align=\"right\">%d</TD>", -prec[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pred[x]);
     fprintf(of, "</TR>\n");
   }
