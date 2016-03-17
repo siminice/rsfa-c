@@ -3,22 +3,22 @@
 #include <string.h>
 #include "catalog.hh"
 
-#define MAX_LEVELS  12
-#define MAX_RR	     4
-#define MAX_N       64
+#define MAX_LEVELS    12
+#define MAX_RR         4
+#define MAX_N         64
 #define MAX_TEAMS   2000
 #define MAX_ROSTER	 100
 #define CAT_ROWS    1000
-#define CAT_COLS		  20
-#define ROSTER_SIZE		22
+#define CAT_COLS      20
+#define ROSTER_SIZE   22
 
 #define MAX_NAMES  20000
 #define DB_KROWS      60
 #define DB_KCOLS      60
 #define DB_KCELL      40
-#define EV_COLS				30
-#define PL_INITIAL	   0
-#define PL_FULL_NAME 	 1
+#define EV_COLS       30
+#define PL_INITIAL     0
+#define PL_FULL_NAME   1
 
 #define DB_HOME		 0
 #define DB_AWAY		 1
@@ -44,13 +44,13 @@
 #define EV_OWNGOAL	   1
 #define EV_PKGOAL	   2
 #define EV_PKMISS	   3
-#define EV_YELLOW	   4
-#define EV_RED	 	   5
-#define EV_YELLOWRED   6
+#define EV_PKSAVED	   4
+#define EV_YELLOW	   5
+#define EV_RED	 	   6
+#define EV_YELLOWRED   7
 #define PSO_TIME     200
 #define UNKNOWN_TIME 999
 
-//burdca,Carol,Burdan,00/00/1912,ROM,173, , ,3,3,0,-11
 #define CAT_MNEM	 0
 #define CAT_PREN	 1
 #define CAT_NAME	 2
@@ -73,7 +73,7 @@ const char *month[] = {"", "Ian", "Feb", "Mar", "Apr", "Mai", "Iun",
 const char *romonth[] = {"", "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
                      "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"};
 
-const char *evicon[] = {"g", "og", "pg", "pm", "cg" , "cr", "cgr"};
+const char *evicon[] = {"g", "og", "pg", "pm", "ps", "cg" , "cr", "cgr"};
 const char *cupround[] = {"Câºtigãtoare", "Finala", "Semifinale", "Sferturi", "Optimi", "ªaisprezecimi"};
 
 char **club;
@@ -90,8 +90,8 @@ int  prank[MAX_N], hrank[MAX_N], grank[MAX_N];
 int  topsc[MAX_NAMES];
 int  num_winter;
 int  *start_winter, *end_winter;
-int  roster[2*ROSTER_SIZE];
-int  mpl[2*ROSTER_SIZE], overtime;
+int  roster[2*ROSTER_SIZE], annotation[2*ROSTER_SIZE];
+int  overtime;
 int  nev, nrev, pso, evp[EV_COLS], evm[EV_COLS], evt[EV_COLS];
 char rname[2*ROSTER_SIZE][DB_KCELL];
 
@@ -745,7 +745,7 @@ void HTMLInfoBlock(int r, int a, int b) {
 }
 
 void ResetRoster() {
-  for (int i=0; i<44; i++) { roster[i] = -1; mpl[i] = 0; }
+  for (int i=0; i<44; i++) { roster[i] = -1; annotation[i] = 0; }
 	overtime = 0;
 }
 
@@ -786,7 +786,7 @@ int RosterMnem(int r, int i) {
 	char *escn = edb[r][i];
 	char scn[128];
 	strncpy(scn, escn, 100);
-	strtok(scn, "'`\"/,\n");
+	strtok(scn, "'`\"/#!,\n");
 	for (int j=0; j<2*ROSTER_SIZE; j++) {
 		if (strcmp(scn, rname[j])==0) return j;
 	}
@@ -804,8 +804,8 @@ void GetEvents(int r, int a, int b) {
   ResetEvents();
   for (int i=0; i<EV_COLS; i++) {
     strcpy(s, edb[r][i]);
-    sp = strtok(s, "'`\"/,\n");
-    sm = strtok(NULL, "'`\"/,\n");
+    sp = strtok(s, "'`\"/#!,\n");
+    sm = strtok(NULL, "'`\"/#!,\n");
     if (sm!=NULL) em = atoi(sm); else em=-1;
     if (sp!=NULL) {
 			ep = Pl.FindMnem(sp);
@@ -818,10 +818,12 @@ void GetEvents(int r, int a, int b) {
 				if (strchr(edb[r][i], '`')) evt[i] = EV_OWNGOAL;
 				else if (strchr(edb[r][i], '"')) evt[i] = EV_PKGOAL;
 				else if (strchr(edb[r][i], '/')) evt[i] = EV_PKMISS;
+				else if (strchr(edb[r][i], '!')) evt[i] = EV_RED;
 			} else {
       	     if (edb[r][i][6]=='`') evt[i] = EV_OWNGOAL;
       	else if (edb[r][i][6]=='"') evt[i] = EV_PKGOAL;
       	else if (edb[r][i][6]=='/') evt[i] = EV_PKMISS;
+      	else if (edb[r][i][6]=='!') evt[i] = EV_RED;
 			}
       if (em < PSO_TIME || em == UNKNOWN_TIME) nrev++; else pso = 1;
       nev++;
@@ -847,6 +849,9 @@ void SortEvents(int r) {
 		if (evp[i]>=0) rid = RosterIdx(evp[i]);
 		else rid = RosterMnem(r,-evp[i]-1);
     evp[i] = rid;
+    if (evt[i] == EV_RED) {
+      annotation[evp[i]] = evm[i];
+    }
   }
 }
 
@@ -1027,7 +1032,8 @@ void HTMLPlayerTH() {
   fprintf(of, "    <tbody>\n");
 }
 
-void HTMLUnknownPlayerTR(int sn, char *pn, int m) {
+void HTMLUnknownPlayerTR(int pnum, char *pn, int m) {
+    int sn = (pnum<=ROSTER_SIZE? pnum : pnum-ROSTER_SIZE);
     fprintf(of, "      <tr class=\"%s\">\n", (sn%2==1?"odd":"even"));
     fprintf(of, "        <td class=\"shirtnumber\">%d</td>\n", sn);
     fprintf(of, "        <td class=\"player large-link\"><img src=\"../../../../thumbs/22/3/ROM.png\"/>&nbsp;%s</td>\n", pn+1);
@@ -1038,23 +1044,29 @@ void HTMLUnknownPlayerTR(int sn, char *pn, int m) {
     fprintf(of, "        <td class=\"season_goals\"></td>\n");
     fprintf(of, "        <td class=\"career_goals\"></td>\n");
     fprintf(of, "        <td class=\"bookings\">");
-    if (sn <=11 && m>0 && m<overtime) fprintf(of, "<img src=\"../../so.png\"/>%d'", m+1);
-    else if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", overtime+1-m);
+    if (annotation[pnum-1] > 0) {
+      if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", annotation[pnum-1]-m);
+      fprintf(of,  "<img src=\"../../cr.png\"/>%d'", annotation[pnum-1]);
+    } else {
+      if (sn <=11 && m<90) fprintf(of, "<img src=\"../../so.png\"/>%d'", m+1);
+      else if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", 91-m);
+    }
     fprintf(of, "        </td>\n");
     fprintf(of, "      </tr>\n\n");
 }
 
-void HTMLPlayerTR(int sn, int px, int m) {
+void HTMLPlayerTR(int pnum, int px, int m) {
     if (px < 0 && px>=-45) {
-      fprintf(of, "      <tr class=\"%s\"></tr>\n", (sn%2==1?"odd":"even"));
+      fprintf(of, "      <tr class=\"%s\"></tr>\n", (pnum%2==1?"odd":"even"));
       return;
     }
+    int sn = (pnum <= ROSTER_SIZE? pnum : pnum - ROSTER_SIZE);
     char pini[12];
     Pl.GetInitial(px, pini);
     fprintf(of, "      <tr class=\"%s\">\n", (sn%2==1?"odd":"even"));
     fprintf(of, "        <td class=\"shirtnumber\">%d</td>\n", sn);
     fprintf(of, "        <td class=\"player large-link\">\n");
-		fprintf(of, "          <img src=\"../../../../thumbs/22/3/%s.png\"/>\n", Pl.P[px].cty);
+	fprintf(of, "          <img src=\"../../../../thumbs/22/3/%s.png\"/>\n", Pl.P[px].cty);
     makeHexlink(Pl.P[px].mnem);
     fprintf(of, "          <a href=\"../../jucatori/%s.html\">%s %s</a>\n", hexlink, pini, Pl.P[px].name);
     fprintf(of, "        </td>\n");
@@ -1065,8 +1077,14 @@ void HTMLPlayerTR(int sn, int px, int m) {
     fprintf(of, "        <td class=\"season_goals\">%d</td>\n", pgol[px]);
     fprintf(of, "        <td class=\"career_goals\"> (%d)</td>\n", cgol[px]);
     fprintf(of, "        <td class=\"bookings\">");
-    if (sn <=11 && m<overtime) fprintf(of, "<img src=\"../../so.png\"/>%d'", m+1);
-    else if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", overtime+1-m);
+    if (annotation[pnum-1] > 0) {
+      if (sn >= 12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", annotation[pnum-1]-m);
+      fprintf(of,  "<img src=\"../../cr.png\"/>%d'", annotation[pnum-1]);
+    }
+    else {
+      if (sn <=11 && m<overtime) fprintf(of, "<img src=\"../../so.png\"/>%d'", m+1);
+      else if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", overtime+1-m);
+    }
     fprintf(of, "        </td>\n");
     fprintf(of, "      </tr>\n\n");
 }
@@ -1168,8 +1186,8 @@ void HTMLLineupsBlock(int r, int a, int b) {
       m = atoi(spm);
     }
     AddStats(px, i, m);
-    if (px>=0) HTMLPlayerTR(i, px, m);
-		else HTMLUnknownPlayerTR(i, spn, m);
+    if (px>=0) HTMLPlayerTR(i+ROSTER_SIZE, px, m);
+		else HTMLUnknownPlayerTR(i+ROSTER_SIZE, spn, m);
   }
 
   HTMLCoachTR(db[r][DB_COACH2]);
