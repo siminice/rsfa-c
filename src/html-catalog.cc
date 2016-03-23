@@ -12,6 +12,14 @@
 #define PSO_TIME     200
 #define UNKNOWN_TIME 999
 
+#define C_RED    33 /* ! */
+#define C_PEN    34 /* " */
+#define C_GOAL   39 /* ' */
+#define C_OWN    96 /* ` */
+#define C_YELL   35 /* # */
+#define C_PKMISS 47 /* / */
+#define MASK_RED 100
+
 int verbosity;
 int tm, pl, cr;
 int FY, LY;
@@ -909,10 +917,10 @@ int revwdl(int x) {
 }
 
 void ExtractLists(int year, char ****ldb, char ****edb) {
-	char spi[64], *sp, *sm;
-	int min, n, pid, r;
+  char spi[64], *sp, *sm;
+  int min, n, pid, r;
   int y = year - FY;
-	int i, j;
+  int i, j;
 
   for (i=0; i<ngm[y][NUM_COMPS]; ++i) {
 		r = ord[y][i];
@@ -951,14 +959,20 @@ void ExtractLists(int year, char ****ldb, char ****edb) {
 			if (edb[y][r][j]==NULL || edb[y][r][j][0]==0x0 || edb[y][r][j][0]==' ' || edb[y][r][j][0]=='~') continue;
 			strcpy(spi, edb[y][r][j]);
 			char evt = edb[y][r][j][6];
-			if (evt==39 || evt==34) {
+			if (evt==C_GOAL || evt==C_PEN) {
 				spi[6] = 0;
                 int evm = atoi(spi+7);
 				pid = binFindMnem(sp);
 				if (pid>=0 && (evm < PSO_TIME || evm == UNKNOWN_TIME)) {
 					elist[pid][clist[pid][0]]++;
 				}
-			}
+			} else if (evt==C_RED) {
+              spi[6] = 0;
+              pid = binFindMnem(sp);
+              if (pid>=0) {
+                elist[pid][clist[pid][0]] += MASK_RED;
+              }
+            }
 		}
   }
 }
@@ -1097,7 +1111,7 @@ void HTMLLineupsHeader() {
   fprintf(of, "<TH>Data naºterii</TH>");
   fprintf(of, "<TH>Naþ.</TH>");
   fprintf(of, "<TH>Club</TH>");
-  fprintf(of, "<TH>Nr</TH>");
+//  fprintf(of, "<TH>Nr</TH>");
   fprintf(of, "<TH>Post</TH>");
   fprintf(of, "<TH>Meciuri</TH>");
   fprintf(of, "<TH>Minute</TH>");
@@ -1195,7 +1209,7 @@ void YearlyTeamStats(int t, int year) {
  	   	fprintf(of, "<TD>%s<IMG SRC=\"../../thumbs/22/3/%s.png\"></IMG></TD>", ccdb[n][i][CAT_NAT], ccdb[n][i][CAT_NAT]);
  	   	int xt = atoi(ccdb[n][i][CAT_CLUB]);
  	   	fprintf(of, "<TD>%s</TD>", NickOf(L, xt, year));
- 	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_NR]);
+// 	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_NR]);
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_POST]);
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_CAPS]);
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_MIN]);
@@ -1403,7 +1417,7 @@ void Lineups(int year) {
     fprintf(of, "<TD>%s<IMG SRC=\"../../thumbs/22/3/%s.png\"></IMG></TD>", ccdb[n][i][CAT_NAT], ccdb[n][i][CAT_NAT]);
     int xt = atoi(ccdb[n][i][CAT_CLUB]);
     fprintf(of, "<TD>%s</TD>", NickOf(L, xt, year));
-    fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_NR]);
+//    fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_NR]);
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_POST]);
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_CAPS]);
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_MIN]);
@@ -1483,13 +1497,15 @@ void printBGColor(int y, int k, int altc) {
   fprintf(of, "<TR");
 	if (k<ngm[y][COMP_LIGA]) {
 		if (altc%2==1) fprintf(of, " BGCOLOR=\"FFFFFF\"");
-		else fprintf(of, " BGCOLOR=\"DDFFFF\"");
+		else fprintf(of, " BGCOLOR=\"EEFFFF\"");
 	}
 	else if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]) {
-		fprintf(of, " BGCOLOR=\"FFE4C4\"");
+//		fprintf(of, " BGCOLOR=\"FFE4C4\"");
+		fprintf(of, " BGCOLOR=\"FFEECA\"");
 	}
 	else if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]+ngm[y][COMP_EURO]) {
-		fprintf(of, " BGCOLOR=\"97C8ED\"");
+//		fprintf(of, " BGCOLOR=\"97C8ED\"");
+		fprintf(of, " BGCOLOR=\"99CAEA\"");
 	}
 	else {
 		fprintf(of, " BGCOLOR=\"FFDDDD\"");
@@ -1501,7 +1517,7 @@ void HTMLTeamRankingTable(Ranking *tr) {
   tr->bubbleSort(RULE_PTS);
   fprintf(of, "<script src=\"../../sorttable.js\"></script>\n");
   fprintf(of, "<TABLE class=\"sortable\" width=\"75%%\" cellpadding=\"2\" frame=\"box\">\n");
-  fprintf(of, "<THEAD><TR BGCOLOR=\"DDDDDD\">\n");
+  fprintf(of, "<THEAD><TR BGCOLOR=\"CCCCCC\">\n");
   fprintf(of, "<TH WIDTH=\"5%%\">#</TH>");
   fprintf(of, "<TH WIDTH=\"35%%\">Club</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Meciuri</TH>");
@@ -1521,7 +1537,7 @@ void HTMLTeamRankingTable(Ranking *tr) {
     int ng = s.numg();
     if (ng > 0) {
       fprintf(of, "\n<TR");
-      if (i%2==1) fprintf(of, " BGCOLOR=\"BBFFFF\"");
+      if (i%2==1) fprintf(of, " BGCOLOR=\"EEEEEE\"");
       fprintf(of, ">");
       fprintf(of, "<TD>%d</TD>", i+1);
       fprintf(of, "<TD>%s</TD>", NameOf(L, t, 3000));
@@ -2086,7 +2102,8 @@ void PlayerStats(int pl) {
 			int haw = mlist[pl][i+1]/10000;
 			int wxl = (mlist[pl][i+1]/1000)%10;
 			int min = mlist[pl][i+1]%1000;
-			int gls = elist[pl][i+1];
+			int gls = elist[pl][i+1] % MASK_RED;
+            int red = elist[pl][i+1] / MASK_RED;
             int shx = scr/100;
             int sgx = scr%100;
       if (firstrow) {
@@ -2104,9 +2121,9 @@ void PlayerStats(int pl) {
       }
 
 			if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]+ngm[y][COMP_EURO])
-	      fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"":"<I>"), NickOf(L, hid, year), (haw?"":"</I>"));
+	      fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"":"<B>"), NickOf(L, hid, year), (haw?"":"</B>"));
 			else
-  	    fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"":"<I>"), NickOf(CL, hid/1000, year), (haw?"":"</I>"));
+  	    fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"":"<B>"), NickOf(CL, hid/1000, year), (haw?"":"</B>"));
 
 			if (k<ngm[y][COMP_LIGA]) {
 	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/%d-%d.html\">%d-%d</A></TD>", 
@@ -2126,9 +2143,9 @@ void PlayerStats(int pl) {
 			}
 
 			if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]+ngm[y][COMP_EURO])
-	      fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"<I>":""), NickOf(L, aid, year), (haw?"</I>":""));
+	      fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"<B>":""), NickOf(L, aid, year), (haw?"</B>":""));
 			else
-	      fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"<I>":""), NickOf(CL, aid/1000, year), (haw?"</I>":""));
+	      fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"<B>":""), NickOf(CL, aid/1000, year), (haw?"</B>":""));
 
 			if (k<ngm[y][COMP_LIGA])
 	      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", rnd);
@@ -2149,8 +2166,10 @@ void PlayerStats(int pl) {
 			cmins += min;
 			cgols += gls;
 
-			if (gls>0) { fprintf(of, "<TD ALIGN=\"right\">%d</TD>", gls);	} else { fprintf(of, "<TD></TD>"); }
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", min);
+      if (gls>0) { fprintf(of, "<TD ALIGN=\"right\">%d</TD>", gls); } else fprintf(of, "<TD/>");
+      fprintf(of, "<TD ALIGN=\"right\">");
+      if (red>0) { fprintf(of, "<img src=\"../cr.png\">"); }
+      fprintf(of, "%d</TD>", min);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", scaps);
 			if (sgols>0) { fprintf(of, "<TD ALIGN=\"right\">%d</TD>", sgols);	} else { fprintf(of, "<TD></TD>"); }
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", smins);
