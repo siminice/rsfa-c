@@ -1357,7 +1357,7 @@ void HTMLEventsBlock(int r, int a, int b) {
   int x = allres[r][a][b]/100;
   int y = allres[r][a][b]%100;
   fprintf(of, " <div class=\"block  clearfix block_match_goals-wrapper\" id=\"g10w\">\n");
-  fprintf(of, "  <h2>Goluri</h2>\n\n");
+  fprintf(of, "  <h2>Evenimente</h2>\n\n");
 
   fprintf(of, "  <div class=\"content  \">\n");
   fprintf(of, "    <div class=\"block_match_goals real-content clearfix \" id=\"g10\">\n\n");

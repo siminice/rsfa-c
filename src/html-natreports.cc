@@ -48,7 +48,7 @@
 #define EV_PKMISS	 3
 #define EV_YELLOW	 4
 #define EV_RED	 	 5
-#define EV_YELLOWRED	 6
+#define EV_YELLOWRED 6
 #define PSO_TIME     200
 
 //burdca,Carol,Burdan,00/00/1912,ROM,Steaua, , ,3,3,0,-11
@@ -664,7 +664,7 @@ void HTMLScoreBlock(int r, int a, int b) {
   }
   fprintf(of, "  <div class=\"container middle\">\n");
   fprintf(of, "    <h1 class=\"thick scoretime \">\n");
-  fprintf(of, "    <a href=\"../../vs-%04d/vs-%d-%d.html\">", a, a, b);
+  fprintf(of, "    <a href=\"../../vs-39000/vs-39000-%d.html\">", a + b - 39000);
   fprintf(of, "      %d - %d\n", s1, s2);
   fprintf(of, "    </a></h1>\n");
   fprintf(of, "  </div>\n\n");
@@ -902,6 +902,7 @@ void GetEvents(int r, int a, int b) {
       	     if (edb[r][i][6]=='`') evt[i] = EV_OWNGOAL;
       	else if (edb[r][i][6]=='"') evt[i] = EV_PKGOAL;
       	else if (edb[r][i][6]=='/') evt[i] = EV_PKMISS;
+      	else if (edb[r][i][6]=='#') evt[i] = EV_YELLOW;
       	else if (edb[r][i][6]=='!') evt[i] = EV_RED;
 			}
       nev++;
@@ -1751,7 +1752,6 @@ void SynopticTable() {
   fprintf(f, "<TBODY>\n");
 	for (int i=0; i<NM; ++i) {
 		int ny = GetYear(db[i][DB_DATE]);
-		if (ny!=year) continue;
 		int home  = atoi(db[i][DB_HOME]);
 		int away  = atoi(db[i][DB_AWAY]);
 		int score = atoi(db[i][DB_SCORE]);
@@ -1771,7 +1771,6 @@ void SynopticTable() {
             if (x1>x2) wxl = 2;
           }
         }
-    fprintf(f, "<TR ");
 
 		int ta = FindReptid(home);
 		int tb = FindReptid(away);
@@ -1782,6 +1781,8 @@ void SynopticTable() {
 			srepl[nrep[ta][tb]-1] = 0;
 		}
 
+	if (ny!=year) continue;
+    fprintf(f, "<TR ");
     if (i%2==1) fprintf(f, "BGCOLOR=\"DDFFFF\" ");
     fprintf(f, ">\n");
 		fprintf(f, "<TD ALIGN=\"center\">%d.</TD>", ++total);

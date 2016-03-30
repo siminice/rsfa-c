@@ -66,6 +66,7 @@ char ssn[32], ecupname[64], ecupmnem[64], flag[12], roundname[64];
 char **club;
 char **mnem;
 char **ctty;
+char **dativ;
 char **dir;
 int  num_winter;
 int  *start_winter, *end_winter;
@@ -90,7 +91,7 @@ Catalog *Pl;
 Locations *Loc;
 Catalog *EPl;
 Locations *ELoc;
-Ranking *Ct, *Cl;
+Ranking *Ct, *Cl, *Crom;
 int nnp, npid[MAX_NPL], rank[MAX_NPL];
 
 //---------------------------
@@ -197,6 +198,23 @@ int Load() {
       L[i]->Append(a);
       k++;
     }
+    s[0] = 0;
+  }
+  fclose(f);
+
+  int nd;
+  f = fopen("dative.dat", "rt");
+  if (!f) {
+    fprintf(stderr, "ERROR: file 'dative.dat' not found.\n");
+    return 0;
+  }
+  fscanf(f, "%d\n", &nd);
+  dativ = new char*[nd];
+  for (int i=0; i<nd; i++) {
+    if (feof(f)) continue;
+    fgets(s, 2000, f);
+    s[strlen(s)-1] = 0;
+    dativ[i] = strdup(s);
     s[0] = 0;
   }
   fclose(f);
@@ -572,7 +590,7 @@ void DatatablesHeader() {
 }
 
 void HTMLLineupsHeader() {
-  fprintf(of, "<script src=\"../../sorttable.js\"></script>\n");
+  fprintf(of, "<script src=\"../sorttable.js\"></script>\n");
 //  fprintf(of, "<TABLE class=\"sortable\" cellpadding=\"2\" frame=\"box\">\n");
   fprintf(of, "<TABLE id=\"all\" class=\"display\">\n");
   fprintf(of, "<THEAD><TR>\n");
@@ -739,35 +757,74 @@ void PlayerRanking(int cr) {
   } while (sorted==0);
 }
 
-void HTMLTeamRankingTable(Ranking *tr) {
-  tr->bubbleSort(RULE_PTS);
-  fprintf(of, "<H3>Palmares echipe</H3>\n");
-
-  fprintf(of, "<script src=\"sorttable.js\"></script>\n");
-  fprintf(of, "<TABLE class=\"sortable\" width=\"65%%\" cellpadding=\"2\" frame=\"box\">\n");
+void HTMLTeamRankingHeader(int ct) {
+  fprintf(of, "<TABLE class=\"sortable\" width=\"50%%\" cellpadding=\"2\" frame=\"box\">\n");
   fprintf(of, "<THEAD><TR BGCOLOR=\"CCCCCC\">\n");
   fprintf(of, "<TH WIDTH=\"5%%\">#</TH>");
-  fprintf(of, "<TH WIDTH=\"35%%\">Echipa</TH>");
+  if (ct) {
+    fprintf(of, "<TH WIDTH=\"35%%\">Þara</TH>");
+  } else {
+    fprintf(of, "<TH WIDTH=\"35%%\">Echipa</TH>");
+  }
   fprintf(of, "<TH WIDTH=\"5%%\">Meciuri</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Victorii</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Egaluri</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Infrâng.</TH>");
-  fprintf(of, "<TH WIDTH=\"15%%\" COLSPAN=\"3\">Golaveraj</TH>");
-//  fprintf(of, "<TH WIDTH=\"1%%\"></TH>");
-//  fprintf(of, "<TH WIDTH=\"4%%\">Gol-</TH>");
+//  fprintf(of, "<TH WIDTH=\"15%%\" COLSPAN=\"3\">Golaveraj</TH>");
+  fprintf(of, "<TH WIDTH=\"7%%\"></TH>");
+  fprintf(of, "<TH WIDTH=\"1%%\"></TH>");
+  fprintf(of, "<TH WIDTH=\"7%%\"></TH>");
   fprintf(of, "<TH WIDTH=\"10%%\">Puncte</TH>");
   fprintf(of, "<TH WIDTH=\"10%%\">Procentaj%%</TH>");
   fprintf(of, "</TR></THEAD>\n");
-  for (int i=0; i<MAX_TEAMS; ++i) {
+}
+
+void HTMLCountryRankingTable(Ranking *tr) {
+  tr->bubbleSort(RULE_PTS);
+  fprintf(of, "<script src=\"sorttable.js\"></script>\n");
+  HTMLTeamRankingHeader(1);
+  for (int i=0; i<NN; ++i) {
     int t = tr->rank[i];
     Stat s = tr->S[t];
     int ng = s.numg();
     if (ng > 0) {
       fprintf(of, "\n<TR");
-      if (tid[t]<EURO) fprintf(of, " BGCOLOR=\"EEFFFF\"");
+      if (i%2==1) fprintf(of, " BGCOLOR=\"EEEEEE\"");
       fprintf(of, ">");
       fprintf(of, "<TD>%d</TD>", i+1);
-      char *ename = NameOf(L, tid[t], 3000);
+      fprintf(of, "<TD><A HREF=\"vs-euro/vs-euro-%d.html\">%s</A></TD>", t, ctty[t]);
+      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ng);
+      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.win);
+      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.drw);
+      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.los);
+      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.gsc);
+      fprintf(of, "<TD>-</TD>");
+      fprintf(of, "<TD ALIGN=\"left\">%d</TD>", s.gre);
+      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", 2*s.win+s.drw);
+      fprintf(of, "<TD ALIGN=\"right\">%d%%</TD>", (int)(100*s.pct()));
+      fprintf(of, "</TR>\n");
+    }
+  }
+  fprintf(of, "</TABLE>\n");
+}
+
+void HTMLTeamRankingTable(Ranking *tr, int eur) {
+  tr->bubbleSort(RULE_PTS);
+  fprintf(of, "<script src=\"../../sorttable.js\"></script>\n");
+  HTMLTeamRankingHeader(0);
+  int tm;
+  for (int i=0; i<MAX_TEAMS; ++i) {
+    int t = tr->rank[i];
+    Stat s = tr->S[t];
+    tm = t;
+    if (eur) tm = tid[t];
+    int ng = s.numg();
+    if (ng > 0) {
+      char *ename = NameOf(L, tm, 3000);
+      fprintf(of, "\n<TR");
+      if (tm<EURO) fprintf(of, " BGCOLOR=\"EEFFFF\"");
+      fprintf(of, ">");
+      fprintf(of, "<TD>%d</TD>", i+1);
       fprintf(of, "<TD>%s</TD>", ename);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ng);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.win);
@@ -777,13 +834,12 @@ void HTMLTeamRankingTable(Ranking *tr) {
       fprintf(of, "<TD>-</TD>");
       fprintf(of, "<TD ALIGN=\"left\">%d</TD>", s.gre);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", 2*s.win+s.drw);
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", (int)(100*s.pct()));
+      fprintf(of, "<TD ALIGN=\"right\">%d%%</TD>", (int)(100*s.pct()));
       fprintf(of, "</TR>\n");
-      if (tid[t]>=EURO) delete ename;
+      if (tm>=EURO) delete ename;
     }
   }
   fprintf(of, "</TABLE>\n");
-  fclose(of);
 }
 
 void VsPage(int t) {
@@ -801,7 +857,8 @@ void VsPage(int t) {
   DatatablesHeader();
   fprintf(of, "</HEAD>\n");
   fprintf(of, "<BODY>\n");
-
+  fprintf(of, "<script src=\"sorttable.js\"></script>\n");
+  fprintf(of, "<H3>Palmaresul echipelor româneºti împotriva echipelor din %s<H3>\n", ctty[t]);
   fprintf(of, "<TABLE WIDTH=\"60%%\" cellpadding=\"1\" frame=\"box\">\n");
   fprintf(of, "<THEAD>\n");
   fprintf(of, "<TR BGCOLOR=\"DDDDDD\">\n");
@@ -838,14 +895,16 @@ void VsPage(int t) {
       if (score>=0) {
         Cl->S[th].addRes(x1, x2);
         Cl->S[ta].addRes(x2, x1);
+        if (home<EURO) Crom->S[home].addRes(x1, x2);
+        if (away<EURO) Crom->S[away].addRes(x2, x1);
         if (ven==0) {
           if (x1>x2) wxl = 1; else if (x1<x2) wxl = 2;
           RH.addRes(x1, x2);
           RT.addRes(x1, x2);
-          Ct->S[opp].addRes(x2, x1);
+          Ct->S[opp].addRes(x1, x2);
         } else {
           RT.addRes(x2, x1);
-          Ct->S[opp].addRes(x1, x2);
+          Ct->S[opp].addRes(x2, x1);
           if (x1<x2) wxl = 1;
           if (x1>x2) wxl = 2;
           if (ven == 2)
@@ -876,9 +935,7 @@ void VsPage(int t) {
       fprintf(of, "</TR>");
       if (home>=EURO) delete hname;
       if (away>=EURO) delete aname;
-
-//      AddPlayerStats(y, i);
-
+      AddPlayerStats(y, i);
     }
   }
   fprintf(of, "</TBODY></TABLE>\n");
@@ -928,61 +985,14 @@ void VsPage(int t) {
   fprintf(of, "</TBODY>");
   fprintf(of, "</TABLE>\n");
 
-  HTMLTeamRankingTable(Cl);
+  fprintf(of, "<H3>Palmares echipe</H3>\n");
+  HTMLTeamRankingTable(Cl, 1);
 
-//  PlayerRanking(1);
-//  SortPlayerStats();
-//  HTMLPlayerStatsTable();
+  PlayerRanking(1);
+  SortPlayerStats();
+  HTMLPlayerStatsTable();
 
   fprintf(of, "</BODY>\n</HTML>\n");
-  fclose(of);
-}
-
-void HTMLCountryRankingTable(Ranking *tr) {
-  tr->bubbleSort(RULE_PTS);
-  of = fopen("html/euro-vs.html", "wt");
-  if (!of) {
-    fprintf(stderr, "Error writing to file html/euro-vs.html...\n");
-    return;
-  }
-  fprintf(of, "<script src=\"sorttable.js\"></script>\n");
-  fprintf(of, "<TABLE class=\"sortable\" width=\"50%%\" cellpadding=\"2\" frame=\"box\">\n");
-  fprintf(of, "<THEAD><TR BGCOLOR=\"CCCCCC\">\n");
-  fprintf(of, "<TH WIDTH=\"5%%\">#</TH>");
-  fprintf(of, "<TH WIDTH=\"35%%\">Þara</TH>");
-  fprintf(of, "<TH WIDTH=\"5%%\">Meciuri</TH>");
-  fprintf(of, "<TH WIDTH=\"5%%\">Victorii</TH>");
-  fprintf(of, "<TH WIDTH=\"5%%\">Egaluri</TH>");
-  fprintf(of, "<TH WIDTH=\"5%%\">Infrâng.</TH>");
-  fprintf(of, "<TH WIDTH=\"15%%\" COLSPAN=\"3\">Golaveraj</TH>");
-//  fprintf(of, "<TH WIDTH=\"1%%\"></TH>");
-//  fprintf(of, "<TH WIDTH=\"4%%\">Gol-</TH>");
-  fprintf(of, "<TH WIDTH=\"10%%\">Puncte</TH>");
-  fprintf(of, "<TH WIDTH=\"10%%\">Procentaj%%</TH>");
-  fprintf(of, "</TR></THEAD>\n");
-  for (int i=0; i<NN; ++i) {
-    int t = tr->rank[i];
-    Stat s = tr->S[t];
-    int ng = s.numg();
-    if (ng > 0) {
-      fprintf(of, "\n<TR");
-      if (i%2==1) fprintf(of, " BGCOLOR=\"EEEEEE\"");
-      fprintf(of, ">");
-      fprintf(of, "<TD>%d</TD>", i+1);
-      fprintf(of, "<TD><A HREF=\"vs-euro/vs-euro-%d.html\">%s</A></TD>", t, ctty[t]);
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ng);
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.win);
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.drw);
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.los);
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.gsc);
-      fprintf(of, "<TD>-</TD>");
-      fprintf(of, "<TD ALIGN=\"left\">%d</TD>", s.gre);
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", 2*s.win+s.drw);
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", (int)(100*s.pct()));
-      fprintf(of, "</TR>\n");
-    }
-  }
-  fprintf(of, "</TABLE>\n");
   fclose(of);
 }
 
@@ -1016,6 +1026,7 @@ int main(int argc, char* argv[]) {
   ELoc->Load("eurocity.dat", "eurostadium.dat");
   Ct = new Ranking(NN);
   Cl = new Ranking(MAX_TEAMS);
+  Crom = new Ranking(MAX_TEAMS);
 
   InitStats();
 
@@ -1030,7 +1041,15 @@ int main(int argc, char* argv[]) {
     VsPage(t);
   }
 
+  of = fopen("html/euro-vs.html", "wt");
+  if (!of) {
+    fprintf(stderr, "Error writing to file html/euro-vs.html...\n");
+    return -1;
+  }
   HTMLCountryRankingTable(Ct);
+  fprintf(of, "<H3>Palmares echipe româneºti</H3>\n");
+  HTMLTeamRankingTable(Crom, 0);
+  fclose(of);
 
   return 0;
 }

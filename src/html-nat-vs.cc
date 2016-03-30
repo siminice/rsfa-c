@@ -62,6 +62,7 @@ const char *cupround[] = {"Câºtigãtoare", "Finala", "Semifinale", "Sferturi", "O
 const char* fxcol[] = {"F0F0B0", "AAFFAA", "FF8888"};
 
 char **ctty;
+char **dativ;
 char **dir;
 int  NN, NC, NM, NT;
 int nnpl, vpl[MAX_NPL];
@@ -179,6 +180,23 @@ int Load() {
     tok[1] = strtok(NULL, ",\n");
     if (tok[0]) strcpy(Comp[i].mnem, tok[0]); else strcpy(Comp[i].mnem, " ");
     if (tok[1]) strcpy(Comp[i].name, tok[1]); else strcpy(Comp[i].mnem, "?");
+    s[0] = 0;
+  }
+  fclose(f);
+
+  int nd;
+  f = fopen("dative.dat", "rt");
+  if (!f) {
+    fprintf(stderr, "ERROR: file 'dative.dat' not found.\n");
+    return 0;
+  }
+  fscanf(f, "%d\n", &nd);
+  dativ = new char*[nd];
+  for (int i=0; i<nd; i++) {
+    if (feof(f)) continue;
+    fgets(s, 2000, f);
+    s[strlen(s)-1] = 0;
+    dativ[i] = strdup(s);
     s[0] = 0;
   }
   fclose(f);
@@ -691,17 +709,18 @@ void VsPage(int t) {
   fprintf(of, "</HEAD>\n");
   fprintf(of, "<BODY>\n");
 
-  fprintf(of, "<TABLE WIDTH=\"60%%\" cellpadding=\"1\" frame=\"box\">\n");
+  fprintf(of, "<H3>Palmaresul echipei României împotriva %s<H3>\n", dativ[t]);
+  fprintf(of, "<TABLE WIDTH=\"70%%\" cellpadding=\"1\" frame=\"box\">\n");
   fprintf(of, "<THEAD>\n");
   fprintf(of, "<TR BGCOLOR=\"DDDDDD\">\n");
   fprintf(of, "<TH WIDTH=\"3%%\"> Num </TH>");
-  fprintf(of, "<TH WIDTH=\"20%%\"> Data@Ora </TH>");
+  fprintf(of, "<TH WIDTH=\"17%%\"> Data@Ora </TH>");
   fprintf(of, "<TH WIDTH=\"15%%\"> Loc </TH>");
-  fprintf(of, "<TH WIDTH=\"20%%\"> Gazde </TH>");
-  fprintf(of, "<TH WIDTH=\"4%%\">  Scor </TH>");
-  fprintf(of, "<TH WIDTH=\"20%%\"> Oaspeþi </TH>");
-  fprintf(of, "<TH WIDTH=\"15%%\"> Competiþia </TH>");
-  fprintf(of, "<TH WIDTH=\"3%%\">  Runda </TH>");
+  fprintf(of, "<TH WIDTH=\"17%%\"> Gazde </TH>");
+  fprintf(of, "<TH WIDTH=\"5%%\">  Scor </TH>");
+  fprintf(of, "<TH WIDTH=\"17%%\"> Oaspeþi </TH>");
+  fprintf(of, "<TH WIDTH=\"14%%\"> Competiþia </TH>");
+  fprintf(of, "<TH WIDTH=\"12%%\">  Runda </TH>");
   fprintf(of, "</TR>\n");
   fprintf(of, "</THEAD>\n");
 
@@ -770,7 +789,8 @@ void VsPage(int t) {
       fprintf(of, "<TD><IMG SRC=\"../../../thumbs/22/3/%s.png\"/>", flag);
       fprintf(of, "%s</TD>", NameOf(CL, away, y+NFY));
       fprintf(of, "<TD ALIGN=\"center\">%s</TD>", db[y][i][DB_COMP]);
-      fprintf(of, "<TD ALIGN=\"center\">%s</TD>", db[y][i][DB_ROUND]);
+      RoundName(db[y][i][DB_ROUND]);
+      fprintf(of, "<TD ALIGN=\"center\">%s</TD>", roundname);
       fprintf(of, "</TR>");
       AddPlayerStats(y, i);
     }

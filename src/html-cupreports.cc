@@ -1257,8 +1257,8 @@ void HTMLSubsBlock(int r, int a, int b) {
       m = atoi(spm);
     }
     AddStats(px, i, m);
-    if (px>=0) HTMLPlayerTR(i, px, m);
-		else HTMLUnknownPlayerTR(i, spn, m);
+    if (px>=0) HTMLPlayerTR(i+ROSTER_SIZE, px, m);
+		else HTMLUnknownPlayerTR(i+ROSTER_SIZE, spn, m);
   }
 
   fprintf(of, "    </tbody>\n");

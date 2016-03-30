@@ -1,7 +1,16 @@
-#include "catalog.hh"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "catalog.hh"
+#include "db.h"
+
+#define ROSTER_SIZE 22
+#define EURO      1000
+#define ROM_NAT  39000
+#define DB_ROWS    400
+#define DB_COLS     60
+#define DB_CELL     30
+#define PSO_TIME   200
 
 void copytk(char **pf, char *tk) {
 	if (tk==NULL) {
@@ -102,7 +111,7 @@ void PlayerStat::reset() {
 	sez = fy = ly = champ = promo = releg = 0;
 	win = drw = los = gsc = gre = 0;
     cap = min = tit = rez = ban = itg = cpt = 0;
-    gol = pen = per = pea = aut = gop = 0;
+    gol = pen = per = pep = pea = aut = gop = 0;
     gal = ros = 0;
 }
 
@@ -121,7 +130,7 @@ void PlayerStat::addRes(int x, int y) {
 	if (x>y) ++win; else { if (x==y) ++drw; else ++los; }
 }
 
-void PlayerStat::addStat(PlayerStat *x) {
+void PlayerStat::add(PlayerStat *x) {
     sez = x->sez;
     fy = x->fy;
     ly = x->ly;
@@ -146,15 +155,13 @@ void PlayerStat::addStat(PlayerStat *x) {
     gol = x->gol;
     pen = x->pen;
     per = x->per;
+    pep = x->pep;
     pea = x->pea;
     aut = x->aut;
     gop = x->gop;
 
     gal = x->gal;
     ros = x->ros;
-}
-
-void addStats(char **ldb, char **edb, Catalog *p, int n) {
 }
 
 int PlayerStat::sup(PlayerStat *x, int rule) {
@@ -187,6 +194,161 @@ int PlayerStat::sup(PlayerStat *x, int rule) {
 	if (gd1<gd2) return 1;
 	if (gsc>x->gsc) return -1;
 	return 1;
+}
+
+void PlayerStat::print() {
+/*
+	sez = fy = ly = champ = promo = releg = 0;
+	win = drw = los = gsc = gre = 0;
+    cap = min = tit = rez = ban = itg = cpt = 0;
+    gol = pen = per = pep = pea = aut = gop = 0;
+    gal = ros = 0;
+
+*/
+  printf(" | m:%4d | J:%3d=%3d(%3d)+%3d, B:%3d | G:%3d, P:%2d/%2d | A:%3d, G-:%3d, P:%2d/%2d | Y:%2d, R:%d | ",
+   min, cap, tit, itg, rez, ban, gol, pen, pen+per, -aut, -gop, pea, pep+pea, gal, ros);
+}
+
+PlayerStats::PlayerStats(Catalog *p, int o) {
+  numP = p->Size();
+  opp = o;
+  c = p;
+  ps = new PlayerStat[numP];
+  for (int i=0; i<numP; i++) ps[i].reset();
+}
+
+static int Idx(char *s, char **tab, int n) {
+  for (int i=0; i<n; i++) {
+    if (strcmp(s, tab[i])==0) return i;
+  }
+  return -1;
+}
+
+void PlayerStats::extract(char ***ldb, char ***edb, int n) {
+  char u[512];
+  char ***pn;
+  int  pm[DB_ROWS][2*ROSTER_SIZE];
+  char en[DB_ROWS][DB_COLS][DB_CELL+1];
+  int  em[DB_ROWS][DB_COLS];
+  char et[DB_ROWS][DB_COLS];
+  int  mmin = 0;
+  int  nev = 0;
+
+  pn = new char**[n];
+  for (int i=0; i<n; i++) {
+    pn[i] = new char*[2*ROSTER_SIZE];
+    for (int j=0; j<2*ROSTER_SIZE; j++) {
+      pn[i][j] = new char[DB_CELL+1];
+    }
+  }
+
+  for (int i=0; i<n; i++) {
+    int th = atoi(ldb[i][DB_HOME]);
+    int ta = atoi(ldb[i][DB_AWAY]);
+    int first = DB_ROSTER1;
+    int last = DB_ROSTER2+ROSTER_SIZE-1;
+    if (opp = 0) {
+      if (th>EURO && th != ROM_NAT) { first = DB_ROSTER2; }
+      if (ta>EURO && ta != ROM_NAT) { last = DB_ROSTER1+ROSTER_SIZE-1; }
+    }
+    for (int j=0; j<2*ROSTER_SIZE; j++) pn[i][j][0] = 0;
+    for (int j=first; j<last; j++) if (j!=DB_COACH1) {
+      int r = j - DB_ROSTER1 - (j/DB_COACH1);
+      strncpy(pn[i][r], ldb[i][j], DB_CELL);
+      strtok(pn[i][r], ":,");
+      pm[i][r] = atoi(strtok(NULL, ":,"));
+      if (pm[i][r]>mmin) mmin = pm[i][r];
+    }
+  }
+  for (int i=0; i<n; i++) {
+    for (int j=0; j<DB_COLS; j++) {
+      if (edb[i][j]!=NULL && edb[i][j][0]!=' ') {
+        et[i][j] = edb[i][j][6];
+        strncpy(en[i][j], strtok(edb[i][j], "'`\"/!#,"), DB_CELL);
+        em[i][j] = atoi(strtok(NULL, ","));
+        nev++;
+      } else {
+        en[i][j][0] = em[i][j] = et[i][j] = 0;
+      }
+    }
+  }
+
+  for (int i=0; i<n; i++) {
+    int gkh = c->FindMnem(pn[i][0]);
+    int gka = c->FindMnem(pn[i][ROSTER_SIZE]);
+    for (int j=0; j<2*ROSTER_SIZE; j++) {
+      if (pn[i][j]!=NULL && pn[i][j][0]!='~' && pn[i][j][0]!=0 ) {
+        int x = c->FindMnem(pn[i][j]);
+        if (x<0 || x>=c->Size()) continue;
+        int m = pm[i][j];
+        ps[x].min += m;
+        if (m>0) {
+          ps[x].cap++;
+          if (j<11 || (j>=22 && j<33)) ps[x].tit++; else ps[x].rez++;
+          if (m == mmin) ps[x].itg++;
+        } else {
+          ps[x].ban++;
+        }
+      }
+    }
+
+    for (int j=0; j<DB_COLS; j++) if (en[i][j]!=NULL && en[i][j][0]!=0) {
+      int x = c->FindMnem(en[i][j]);
+      int y = Idx(en[i][j], pn[i], 2*ROSTER_SIZE);
+      switch (et[i][j]) {
+        case 39:
+          if (x>=0) ps[x].gol++;
+          if (y<22 && gka>=0) ps[gka].gop++;
+          if (y>21 && gkh>=0) ps[gkh].gop++;
+          break;
+        case 34:
+          if (em[i][j] < PSO_TIME) {
+            if (x>=0) { ps[x].gol++; ps[x].pen++; }
+            if (y<22 && gka>=0) { ps[gka].gop++; ps[gka].pep++; }
+            if (y>21 && gkh>=0) { ps[gkh].gop++; ps[gkh].pep++; }
+          }
+          break;
+        case 47:
+          if (em[i][j] < PSO_TIME) {
+            if (x>=0) { ps[x].per++; }
+            if (y<22 && gka>=0) { ps[gka].pea++; }
+            if (y>21 && gkh>=0) { ps[gkh].pea++; }
+          }
+          break;
+        case 96:
+          if (x>=0) { ps[x].aut++; }
+          if (y<22 && gkh>=0) ps[gkh].gop++;
+          if (y>21 && gka>=0) ps[gka].gop++;
+          break;
+        case 35:
+          if (x>=0) ps[x].gal++;
+          break;
+        case 33:
+          if (x>=0) ps[x].ros++;
+          break;
+      }
+    }
+  }
+  for (int i=0; i<n; i++) {
+    for (int j=0; j<2*ROSTER_SIZE; j++) {
+      delete pn[i][j];
+    }
+    delete pn[i];
+  }
+  delete pn;
+};
+
+void PlayerStats::print() {
+  char sn[32];
+  for (int i=0; i<numP; i++) {
+    if (ps[i].min>0) {
+      Person *px = &(c->P[i]);
+      sprintf(sn, "%s, %s", px->name, px->pren);  sn[24] = 0;
+      printf("%-24s", sn);
+      ps[i].print();
+      printf("\n");
+    }
+  }
 }
 
 /************************************/

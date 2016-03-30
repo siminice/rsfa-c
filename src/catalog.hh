@@ -67,49 +67,6 @@ class Stat {
 	int sup(Stat *x, int rule=0);
 };
 
-class PlayerStat {
-  public:
-    int sez;
-    int fy;
-    int ly;
-    int champ;
-    int promo;
-    int releg;
-
-    int win;
-    int drw;
-    int los;
-    int gsc;
-    int gre;
-
-    int cap;
-    int min;
-    int tit;
-    int rez;
-    int ban;
-    int itg;
-    int cpt;
-
-    int gol;
-    int pen;
-    int per;
-    int pea;
-    int aut;
-    int gop;
-
-    int gal;
-    int ros;
-
-    PlayerStat();
-    void reset();
-    int numg();
-    double pct();
-    void addStat(PlayerStat *x);
-    void addStats(char **ldb, char **edb, Catalog *p, int n);
-    void addRes(int x, int y);
-    int sup(PlayerStat *x, int rule=0);
-};
-
 class Ranking {
 	public:
 	int n;
@@ -156,6 +113,61 @@ class Locations {
 	int Load(const char *cfilename, const char *vfilename);
 	int FindCity(char *cmnem);
 	int FindVenue(char *vmnem);
+};
+class PlayerStat {
+  public:
+    int sez;
+    int fy;
+    int ly;
+    int champ;
+    int promo;
+    int releg;
+
+    int win;
+    int drw;
+    int los;
+    int gsc;
+    int gre;
+
+    int cap;
+    int min;
+    int tit;
+    int rez;
+    int ban;
+    int itg;
+    int cpt;
+
+    int gol;
+    int pen;
+    int per;
+    int pep;
+    int pea;
+    int aut;
+    int gop;
+
+    int gal;
+    int ros;
+
+    PlayerStat();
+    void reset();
+    int numg();
+    double pct();
+    void add(PlayerStat *x);
+    void addRes(int x, int y);
+    int sup(PlayerStat *x, int rule=0);
+    void print();
+};
+
+class PlayerStats {
+  PlayerStat* ps;
+  Catalog *c;
+  int numP;
+  int opp;
+  public:
+    PlayerStats(Catalog *p, int o);
+    int size();
+    void extract(char ***ldb, char ***edb, int n);
+    void print();
 };
 
 #endif

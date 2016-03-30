@@ -617,6 +617,7 @@ void AdjustStats() {
     }
     if (cancel_gdiff>0) {
       gsc[i] = gre[i] = 0;
+      win[i] = drw[i] = los[i] = 0;
     }
   }
 }
