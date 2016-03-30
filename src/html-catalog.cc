@@ -11,6 +11,8 @@
 #define NATIONALA 39000
 #define PSO_TIME     200
 #define UNKNOWN_TIME 999
+#define MAX_PIDS 1000
+#define MAX_TIDS   64
 
 #define C_RED    33 /* ! */
 #define C_PEN    34 /* " */
@@ -21,6 +23,10 @@
 #define MASK_RED 100
 
 int verbosity;
+int current;
+int *curpids;
+int *curtids;
+int numpids, numtids;
 int tm, pl, cr;
 int FY, LY;
 int CFY, CLY;
@@ -145,6 +151,23 @@ Aliases **CL;
 
 //--------------------------------------
 
+int LoadInts(char *filename, int *v, int &n) {
+  FILE *f = fopen(filename, "rt");
+  if (!f) {
+    fprintf(stderr, "Error: file %s not found.\n", filename);
+    return 0;
+  }
+  int x;
+  n = 0;
+  while (!feof(f)) {
+    fscanf(f, "%d", &x);
+    if (feof(f)) continue;
+    v[n++] = x;
+  }
+  fclose(f);
+  return 1;
+}
+
 int Load() {
   FILE *f;
   char s[2000], *tok[20], *ystr, *name, *nick;
@@ -266,6 +289,12 @@ int Load() {
       fgets(s, 200, f);
   }
 	fclose(f);
+
+  curpids = new int[MAX_PIDS];
+  curtids = new int[MAX_TIDS];
+  LoadInts("current-pids", curpids, numpids);
+  LoadInts("current-tids", curtids, numtids);
+
   return 1;
 }
 
@@ -1151,7 +1180,7 @@ void HTMLInA(int t, int year) {
 	fprintf(of, "</CENTER><HR>\n");
 }
 
-void YearlyTeamStats(int t, int year) {
+void HTMLYearlyTeamStats(int t, int year) {
 	if (t<0 || t>=NC) return;
 	if (year<CFY || year>CLY) return;
   int n = year - CFY;
@@ -2292,8 +2321,29 @@ void HTMLFooter() {
   fclose(of);
 }
 
-int main(int argc, char **argv) {
+void HTMLAlltimeTeamStats(int t, int pl) {
+    ResetStats();
+    for (year=CFY; year<=CLY; year++) {
+      TeamStats(year, t, pl);
+    }
+    Sort(cr);
 
+    fprintf(stderr, "Alltime team stats for %s.\n", NameOf(L, t, 3000));
+    sprintf(ofilename, "html/lot-%d.html", t);
+    of = fopen(ofilename, "wt");
+    if (of==NULL) {
+      fprintf(stderr, "ERROR: could not open file %s.\n", ofilename);
+      return;
+    }
+    HTMLHeader(t);
+    HTMLInA(t, -1);
+    HTMLTable(t);
+    HTMLFooter();
+    fclose(of);
+}
+
+int main(int argc, char **argv) {
+  current = 0;
   verbosity = 2;
   CFY  = 1933; CLY = 2016;
   KFY  = 1934; KLY = 2016;
@@ -2306,6 +2356,7 @@ int main(int argc, char **argv) {
 
   for (int k=1; k<argc; k++) {
     if (strcmp(argv[k], "-q")==0) verbosity = 0;
+    else if (strcmp(argv[k], "-c")==0) current = 1;
     else if (strcmp(argv[k], "-fy")==0 && k<argc-1)  {
       FY = atoi(argv[++k]);
       CFY = KFY = EFY = NFY = FY;
@@ -2447,37 +2498,23 @@ int main(int argc, char **argv) {
     fclose(of);
   }
 
-//  if (tm>=-1 && tm<NC) fprintf(stderr, "<UL>\n");
-
-  if (tm==-1) for (int t=0; t<NC; t++) if (dva[t]>0) {
+  if (current) {
+    for (int t=0; t<numtids; t++) {
+      int y = CLY;
+      int x = curtids[t];
+      fprintf(stderr, "<LI>Jucatori %s< in %d.</LI>\n", NameOf(L, x, 3000), y);
+	  HTMLYearlyTeamStats(x, y);
+      HTMLAlltimeTeamStats(x, pl);
+      ResetStats();
+    }
+  }
+  else if (tm==-1) for (int t=0; t<NC; t++) if (dva[t]>0) {
     fprintf(stderr, "<LI><A HREF=\"lot-%d.html\">Jucãtori %s</A></LI>\n", t, NameOf(L, t, 3000));
 		for (int y=CFY; y<=CLY; y++)  {
-            //printf("Yearly team stats %d %d.\n", t, y);
-			YearlyTeamStats(t, y);
+			HTMLYearlyTeamStats(t, y);
 		}
-    ResetStats();
-    for (year=CFY; year<=CLY; year++) {
-      //printf("Team stats %d %d.\n", year, t);
-      TeamStats(year, t, pl);
-    } 
-
-    Sort(cr); 
-
-    sprintf(ofilename, "html/lot-%d.html", t);
-    of = fopen(ofilename, "wt");
-    if (of==NULL) {
-      fprintf(stderr, "ERROR: could not open file %s.\n", ofilename);
-      continue;
-    }
-    HTMLHeader(t);
-    HTMLInA(t, -1);
-    HTMLTable(t);
-    HTMLFooter();
-
-    fclose(of);
+    HTMLAlltimeTeamStats(t, pl);
   }
-//  if (tm>=-1 && tm<NC) fprintf(stderr, "</UL>\n<HR>\n");
-
 
   ResetStats();
   for (year=KFY; year<=KLY; year++) {
@@ -2485,7 +2522,6 @@ int main(int argc, char **argv) {
     CupStats(year, TM_CUPA);
   }
 
-  
     sprintf(ofilename, "html/catalog-cupa.html");
     of = fopen(ofilename, "wt");
     if (of==NULL) {
@@ -2496,9 +2532,7 @@ int main(int argc, char **argv) {
     HTMLHeader(TM_CUPA);
     HTMLTable(TM_CUPA);
     HTMLFooter();
-  
     fclose(of);
-
 
   ResetStats();
   for (year=EFY; year<=ELY; year++) {
@@ -2506,7 +2540,6 @@ int main(int argc, char **argv) {
     EuroStats(year, TM_EURO);
   }
 
-  
     sprintf(ofilename, "html/catalog-euro.html");
     of = fopen(ofilename, "wt");
     if (of==NULL) {
@@ -2517,7 +2550,7 @@ int main(int argc, char **argv) {
     HTMLHeader(TM_EURO);
     HTMLTable(TM_EURO);
     HTMLFooter();
-  
+
     fclose(of);
 
   ResetStats();
@@ -2526,7 +2559,7 @@ int main(int argc, char **argv) {
     NatStats(year, TM_NATL);
   }
 
-  
+
     sprintf(ofilename, "html/catalog-nat.html");
     of = fopen(ofilename, "wt");
     if (of==NULL) {
@@ -2537,16 +2570,22 @@ int main(int argc, char **argv) {
     HTMLHeader(TM_NATL);
     HTMLTable(TM_NATL);
     HTMLFooter();
-  
+
     fclose(of);
 
-
   ResetStats();
-  if (pl<0) for (int p=0; p<NP; p++) {
-    PlayerStats(p);
+  if (current) {
+    for (int p=0; p<numpids; p++) {
+      fprintf(stderr, "%d/%d ", p+1, numpids);
+      PlayerStats(curpids[p]);
+    }
+  } else {
+    if (pl<0) for (int p=0; p<NP; p++) {
+      PlayerStats(p);
+    }
+    else if (pl<NP) PlayerStats(pl);
   }
-  else if (pl<NP) PlayerStats(pl);
- 
+
   return 0;
 }
 
