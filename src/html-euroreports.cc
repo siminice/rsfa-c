@@ -102,7 +102,6 @@ char  db[DB_ROWS][DB_COLS][DB_CELL];
 char edb[DB_ROWS][EV_COLS][DB_CELL];
 char catalog[CAT_ROWS][128];
 int  tid[MAX_N];
-int	 nrept, reptid[MAX_N], nrep[MAX_N][MAX_N];
 int  plid[MAX_N][MAX_ROSTER];
 char rmnem[MAX_N][MAX_ROSTER][7];
 int  npl[MAX_N];
@@ -229,10 +228,6 @@ void ResetStats() {
      pemeci[i] = petit[i] = peint[i] = perez[i] = peban[i] = pemin[i] = pegol[i] = pegre[i] = 0;
      pernk[i] = i;
   }
-	nrept = 0;
-	for (int i=0; i<MAX_N; i++) {
-		for (int j=0; j<MAX_N; j++) nrep[i][j] = 0;
-	}
 }
 
 void InitStats() {
@@ -468,14 +463,6 @@ int FindTid(int t) {
 		if (tid[i]==t) return i;
 	}
 	return -1;
-}
-
-int FindReptid(int t) {
-	for (int i=0; i<nrept; i++) {
-		if (reptid[i]==t) return i;
-	}
-	reptid[nrept++] = t;
-	return nrept-1;
 }
 
 void LoadCatalog() {
@@ -1613,18 +1600,11 @@ void PrintReport(int r) {
 	RoundName(db[r][DB_ROUND]);
 	int a = atoi(db[r][DB_HOME]);
 	int b = atoi(db[r][DB_AWAY]);
+    int z = CompactDate(db[r][DB_DATE]);
 	home = a;
 	away = b;
 	score = atoi(db[r][DB_SCORE]);
-	int ta = FindReptid(a);
-	int tb = FindReptid(b);
-	char srepl[12]; srepl[0] = 0;
-	if (ta>=0 && tb>=0) {
-		nrep[ta][tb]++;
-		for (int ri=2; ri<=nrep[ta][tb]; ri++) srepl[ri-2] = 'r';
-		srepl[nrep[ta][tb]-1] = 0;
-	}
-  sprintf(rfilename, "html/reports/%d/e%d-%d%s.html", year, a, b, srepl);
+  sprintf(rfilename, "html/reports/%d/e%d-%d-%d.html", year, a, b, z);
   of = fopen(rfilename, "wt");
   if (of==NULL) { fprintf(stderr, "ERROR: Could not open file %s.\n", rfilename); return; }
 
@@ -1760,10 +1740,10 @@ void SynopticTable() {
 	for (int i=0; i<NM; ++i) {
 		int home  = atoi(db[i][DB_HOME]);
 		int away  = atoi(db[i][DB_AWAY]);
+        int zi    = CompactDate(db[i][DB_DATE]);
 		int score = atoi(db[i][DB_SCORE]);
 		int ecp   = atoi(db[i][DB_COMP]);
 		int clen  = strlen(db[i][DB_ROUND]);
-		int repl  = (db[i][DB_ROUND][clen-1] == 'r' || db[i][DB_ROUND][clen-1] == 'R');
     fprintf(f, "<TR ");
     if (i%2==1) fprintf(f, "BGCOLOR=\"DDFFFF\" ");
     fprintf(f, ">\n");
@@ -1771,8 +1751,8 @@ void SynopticTable() {
 		FlagOf(home);
     fprintf(f, "<TD><IMG SRC=\"../../thumbs/22/3/%s.png\"/>", flag);
 		fprintf(f, "%s</TD>", NameOf(L, home, year));
-		fprintf(f, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/e%d-%d%s.html\">%d-%d</A></TD>",
-			year, home, away, (repl?"r":""), score/100, score%100);
+		fprintf(f, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/e%d-%d-%d.html\">%d-%d</A></TD>",
+			year, home, away, zi, score/100, score%100);
 		FlagOf(away);
     fprintf(f, "<TD><IMG SRC=\"../../thumbs/22/3/%s.png\"/>", flag);
 		fprintf(f, "%s</TD>", NameOf(L, away, year));
@@ -1882,7 +1862,6 @@ int main(int argc, char* argv[]) {
   EArb.Load("euroreferees.dat");
   Loc.Load("city.dat", "stadium.dat");
   ELoc.Load("eurocity.dat", "eurostadium.dat");
-
 
   for (int i=0; i<NM; i++) {
     PrintReport(i);

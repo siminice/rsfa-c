@@ -65,7 +65,6 @@ const char *month[] = {"", "Ian", "Feb", "Mar", "Apr", "Mai", "Iun",
                      "Iul", "Aug", "Sep", "Oct", "Noi", "Dec"};
 const char *romonth[] = {"", "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
                      "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"};
-const char *suffix[] = {"", "r", "rr", "rrr", "rrrr"};
 const char *evicon[] = {"g", "og", "pg", "pm", "cg" , "cr", "cgr"};
 
 char **club;
@@ -1103,12 +1102,12 @@ void SeasonName(int y, char *ss) {
 }
 
 
-void HTMLHeader(int i, int a, int b) {
+void HTMLHeader(int r, int a, int b) {
   char ss[32], sdate[32];
   SeasonName(year, ss);
   fprintf(of, "<!DOCTYPE html>\n");
   fprintf(of, "<head>\n");
-  int z = round[0][a][b]%1000;
+  int z = round[r][a][b]%1000;
   fprintf(of, "  <title>%s vs. %s - %d %s</title>\n", NameOf(L, id[a], year), NameOf(L, id[b], year), z%50, romonth[z/50]);
   fprintf(of, "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\" />\n");
   fprintf(of, "<link rel=\"stylesheet\" href=\"../../css/report.css\" type=\"text/css\" charset=\"iso-8859-2\" />\n");
@@ -1707,21 +1706,6 @@ void HTMLFooter() {
   fprintf(of, "</body>\n</html>");
 }
 
-
-void printScore(int h, int g, int rs) {
-  int x = rs/100;
-  int y = rs%100;
-  if (y>=SPECIAL) {
-    if (y>=LOSS_BOTH_0 && y<=LOSS_BOTH_9) {
-      int z = y%10;
-      fprintf(of, "<TD ALIGN=\"center\"><FONT COLOR=\"red\">p-%d</FONT></TD>", z);
-    }
-    return;
-  }
-  fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/%d-%d%s.html\">%d-%d</A></TD>", 
-    year, h, g, suffix[h], rs/100, rs%100);
-}
-
 void trim(char *s) {
   if (s[1]==' ' || s[1]=='.') { s[1] = s[2]; s[2] = s[3]; }
   if (s[2]==' ' || s[2]=='.') { s[2] = s[3]; }
@@ -1730,8 +1714,7 @@ void trim(char *s) {
 
 void PrintReport(int r, int a, int b) {
   char rfilename[128];
-  sprintf(rfilename, "html/reports/%d/%d-%d%s.html", 
-    year, id[a], id[b], suffix[r]);
+  sprintf(rfilename, "html/reports/%d/%d-%d-%d.html", year, id[a], id[b], round[r][a][b]%1000);
   of = fopen(rfilename, "wt");
   if (of==NULL) { fprintf(stderr, "ERROR: Could not open file %s.\n", rfilename); return; }
 

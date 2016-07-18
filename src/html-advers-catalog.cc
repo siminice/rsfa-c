@@ -212,6 +212,21 @@ int Load() {
   return 1;
 }
 
+int CompactDate(char *s) {
+  if (s==NULL) return 0;
+  char sw[60];
+  strcpy(sw, s);
+  char *sd = strtok(sw, "@");
+  char *sh = strtok(NULL, ",");
+  if (sd==NULL) return 0;
+  char *sz = strtok(sd, "-");
+  char *sm = strtok(NULL, "-");
+  int nz=0, nm=0;
+  if (sz) nz = atoi(sz);
+  if (sm) nm = atoi(sm);
+  return 50*nm+nz;
+}
+
 char *EuroName(int t, int nick, int year) {
   int ct = t/1000;
   int cl = t%1000;
@@ -1196,6 +1211,7 @@ void PlayerStats(int pl) {
 			int aid = atoi(ladb[y][k][DB_AWAY]);
 			int scr = atoi(ladb[y][k][DB_SCORE]);
             int ny  = GetYear(ladb[y][k][DB_DATE]);
+            int zi  = CompactDate(ladb[y][k][DB_DATE]);
 			int ecl = ladb[y][k][DB_COMP][0] - 48;
 			int rnd = atoi(ladb[y][k][DB_ROUND]);
 			int haw = mlist[pl][i+1]/10000;
@@ -1205,20 +1221,20 @@ void PlayerStats(int pl) {
       fprintf(of, "<TD ALIGN=\"left\">%s</TD>", ladb[y][k][DB_DATE]);
       fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"":"<I>"), NickOf(L, hid, year), (haw?"":"</I>"));
 			if (k<ngm[y][COMP_LIGA]) {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], year, hid, aid, scr/100, scr%100);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/%d-%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, zi, scr/100, scr%100);
 			}
 			else if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]) {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/c%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], year, hid, aid, scr/100, scr%100);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/c%d-%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, zi, scr/100, scr%100);
 			}
 			else if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]+ngm[y][COMP_EURO]) {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], year, hid, aid, scr/100, scr%100);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, zi, scr/100, scr%100);
 			}
 			else {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/n%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], ny, hid, aid, scr/100, scr%100);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/n%d-%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], ny, hid, aid, zi, scr/100, scr%100);
 			}
 
 		  fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"<I>":""), NickOf(L, aid, year), (haw?"</I>":""));

@@ -78,8 +78,10 @@ int num_winter;
 int *start_winter, *end_winter;
 char **cupm;
 int **cupr;
+int **cupd;
 int ncol, nkol;
 int vs[MAX_SEASONS][MAX_COLS];
+int vd[MAX_SEASONS][MAX_COLS];
 int ha[MAX_SEASONS][MAX_COLS];
 int pos1[MAX_SEASONS];
 int pos2[MAX_SEASONS];
@@ -807,15 +809,23 @@ int CupData(int a, int b) {
   nkol = 0;
   int na = LY[0]-FY[0]+1;
   cupr = new int*[na];
+  cupd = new int*[na];
   for (int y=0; y<na; y++) {
     cupr[y] = new int[4];
-    for (int t=0; t<4; t++) cupr[y][t] = -1;
+    cupd[y] = new int[4];
+    for (int t=0; t<4; t++) {
+      cupr[y][t] = -1;
+      cupd[y][t] = 0;
+    }
   }
 
   prevy = -1;
   row = 0;
   for (int i=0; i<NKM; i++) {
       int year     = 75*(cupm[i][0]-48) + (cupm[i][1]-48) + 1870;
+      int mon      = cupm[i][2]-48;
+      int day      = cupm[i][3]-48;
+      int zi       = 50*((mon-1)%12+1) + day;
       row = year > prevy? 0 : row+1;
       prevy = year;
       int home     = 75*((int)(cupm[i][7]-48)) + cupm[i][8] - 48;
@@ -823,7 +833,6 @@ int CupData(int a, int b) {
       if (a!=home && a!=guest) continue;
       if (b!=home && b!=guest) continue;
 
-      int mon      = cupm[i][2] - 48;
       int ssn      = year;
       int round    = (int) (cupm[i][6] - 48);
       int len  = strlen((char *)cupm[i]);
@@ -844,6 +853,7 @@ int CupData(int a, int b) {
 
       if (a==home) {
         cupr[ns][c] = 1000*round+100*score[0]+score[1];
+        cupd[ns][c] = zi;
         if (gdiff>0) wh[10]++;
         else if (gdiff==0) dh[10]++;
         else lh[10]++;
@@ -853,6 +863,7 @@ int CupData(int a, int b) {
       }
       else {
         cupr[ns][c] = 1000*round+100*score[1]+score[0];
+        cupd[ns][c] = zi;
         if (gdiff>0) lg[10]++;
         else if (gdiff==0) dg[10]++;
         else wg[10]++;
@@ -914,6 +925,7 @@ void getResults(int a, int b, int y, int d1, int d2) {
         else if (x1<y1) { lh[d]++; }
         else { wh[d]++; }
         vs[ns][2*h] = 100*x1+y1;
+        vd[ns][2*h] = round[h][t1][t2]%1000;
         ha[ns][2*h] = 1;
       }
 
@@ -930,6 +942,7 @@ void getResults(int a, int b, int y, int d1, int d2) {
         else if (x2>y2) { lg[d]++; }
         else { wg[d]++; }
         vs[ns][2*h+1] = 100*y2+x2;
+        vd[ns][2*h+1] = round[h][t2][t1]%1000;
         ha[ns][2*h+1] = 2;
       }
     } // for h
@@ -1017,8 +1030,8 @@ void StatLine(int a, int b, int y, int d1, int d2, int rka, int rkb) {
         fprintf(of, "<TD/>");
       }
       else {
-        fprintf(of, "<TD><A HREF=\"../reports/%d/%d-%d.html\"><FONT COLOR=\"%s\"><B>%d-%d</B></FONT></A></TD>", 
-           y, (ha[ns][c]==1?a:b), (ha[ns][c]==1?b:a), rgbs[col1], ga, gb);
+        fprintf(of, "<TD><A HREF=\"../reports/%d/%d-%d-%d.html\"><FONT COLOR=\"%s\"><B>%d-%d</B></FONT></A></TD>", 
+           y, (ha[ns][c]==1?a:b), (ha[ns][c]==1?b:a), vd[ns][c], rgbs[col1], ga, gb);
       }
     }
   }
@@ -1043,8 +1056,8 @@ void StatLine(int a, int b, int y, int d1, int d2, int rka, int rkb) {
         if (c==0) {
           fprintf(of, "%s: ", cupround[kr]);
 				}
-        fprintf(of, "<A HREF=\"../reports/%d/c%d-%d.html\"><FONT COLOR=\"%s\">%d-%d</FONT></A></TD>",
-					y, (ha[ns][ncol+c]==1?a:b), (ha[ns][ncol+c]==1?b:a), rgbs[col2], ga, gb);
+        fprintf(of, "<A HREF=\"../reports/%d/c%d-%d-%d.html\"><FONT COLOR=\"%s\">%d-%d</FONT></A></TD>",
+					y, (ha[ns][ncol+c]==1?a:b), (ha[ns][ncol+c]==1?b:a), cupd[ns][c], rgbs[col2], ga, gb);
       }
     }
 
@@ -1370,7 +1383,7 @@ void Vs(int a, int b) {
   ncol = 0;
   for (int y=0; y<MAX_SEASONS; y++) {
     pos1[y] = 40000; pos2[y] = 40000;
-    for (int c=0; c<MAX_COLS; c++) vs[y][c] = ha[y][c] = -1;
+    for (int c=0; c<MAX_COLS; c++) vs[y][c] = vd[y][c] = ha[y][c] = -1;
   }
 
   start = 0; last = 3000;

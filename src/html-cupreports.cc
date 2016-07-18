@@ -101,7 +101,6 @@ char  db[DB_KROWS][DB_KCOLS][DB_KCELL];
 char edb[DB_KROWS][EV_COLS][DB_KCELL];
 char catalog[CAT_ROWS][128];
 int  tid[MAX_N];
-int	 nrept, reptid[MAX_N], nrep[MAX_N][MAX_N];
 int  plid[MAX_N][MAX_ROSTER];
 char rmnem[MAX_N][MAX_ROSTER][7];
 int  npl[MAX_N];
@@ -298,10 +297,6 @@ void ResetStats() {
      psez[i] = pmeci[i] = ptit[i] = pint[i] = prez[i] = pban[i] = pmin[i] = pgol[i] = pgre[i] = 0;
      prnk[i] = i;
   }
-	nrept = 0;
-	for (int i=0; i<MAX_N; i++) {
-		for (int j=0; j<MAX_N; j++) nrep[i][j] = 0;
-	}
 }
 
 void InitStats() {
@@ -470,14 +465,6 @@ int FindTid(int t) {
 		if (tid[i]==t) return i;
 	}
 	return -1;
-}
-
-int FindReptid(int t) {
-	for (int i=0; i<nrept; i++) {
-		if (reptid[i]==t) return i;
-	}
-	reptid[nrept++] = t;
-	return nrept-1;
 }
 
 void LoadCatalog() {
@@ -1323,18 +1310,11 @@ void PrintReport(int r) {
   char rfilename[128];
 	int a = atoi(db[r][DB_HOME]);
 	int b = atoi(db[r][DB_AWAY]);
+    int z = CompactDate(db[r][DB_DATE]);
 	home = a;
 	guest = b;
 	score = atoi(db[r][DB_SCORE]);
-	int ta = FindReptid(a);
-	int tb = FindReptid(b);
-	char srepl[12]; srepl[0] = 0;
-	if (ta>=0 && tb>=0) {
-		nrep[ta][tb]++;
-		for (int ri=2; ri<=nrep[ta][tb]; ri++) srepl[ri-2] = 'r';
-		srepl[nrep[ta][tb]-1] = 0;
-	}
-  sprintf(rfilename, "html/reports/%d/c%d-%d%s.html", year, a, b, srepl);
+  sprintf(rfilename, "html/reports/%d/c%d-%d-%d.html", year, a, b, z);
   of = fopen(rfilename, "wt");
   if (of==NULL) { fprintf(stderr, "ERROR: Could not open file %s.\n", rfilename); return; }
 

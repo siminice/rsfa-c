@@ -1644,8 +1644,9 @@ void PlayerStats(int pl) {
 			int hid = atoi(lcdb[debc][debnum][DB_HOME]);
 			int aid = atoi(lcdb[debc][debnum][DB_AWAY]);
 			int scr = atoi(lcdb[debc][debnum][DB_SCORE]);
-		  fprintf(of, "<LI>Debut în prima divizie  #%d<BR>data: %s<BR>meciul: <A HREF=\"../reports/%d/%d-%d.html\">%s-%s %d-%d</A></LI>\n",
-				debord[pl]+1, sdate, debyear, hid, aid, NickOf(L, hid, debyear), NickOf(L, aid, debyear), scr/100, scr%100);
+			int zi  = CompactDate(lcdb[debc][debnum][DB_DATE]);
+		  fprintf(of, "<LI>Debut în prima divizie  #%d<BR>data: %s<BR>meciul: <A HREF=\"../reports/%d/%d-%d.-%d.html\">%s-%s %d-%d</A></LI>\n",
+				debord[pl]+1, sdate, debyear, hid, aid, zi, NickOf(L, hid, debyear), NickOf(L, aid, debyear), scr/100, scr%100);
 		}
 	}
   fprintf(of, "</UL>\n");
@@ -2123,6 +2124,7 @@ void PlayerStats(int pl) {
             }
 			printBGColor(y, k, altc);
 			int ny  = GetYear(ladb[y][k][DB_DATE]);
+			int zi  = CompactDate(ladb[y][k][DB_DATE]);
 			int hid = atoi(ladb[y][k][DB_HOME]);
 			int aid = atoi(ladb[y][k][DB_AWAY]);
 			int scr = atoi(ladb[y][k][DB_SCORE]);
@@ -2155,20 +2157,20 @@ void PlayerStats(int pl) {
   	    fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"":"<B><I>"), NickOf(CL, hid/1000, year), (haw?"":"</I></B>"));
 
 			if (k<ngm[y][COMP_LIGA]) {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], year, hid, aid, shx, sgx);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/%d-%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, zi, shx, sgx);
 			}
 			else if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]) {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/c%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], year, hid, aid, shx, sgx);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/c%d-%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, zi, shx, sgx);
 			}
 			else if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]+ngm[y][COMP_EURO]) {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], year, hid, aid, shx, sgx);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, zi, shx, sgx);
 			}
 			else {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/n%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], ny, hid, aid, shx, sgx);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/n%d-%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], ny, hid, aid, zi, shx, sgx);
 			}
 
 			if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]+ngm[y][COMP_EURO])

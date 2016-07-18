@@ -879,6 +879,7 @@ void VsPage(int t) {
       if (home/EURO != t && away/EURO !=t) continue;
 
       int score = atoi(db[y][i][DB_SCORE]);
+      int zi    = CompactDate(db[y][i][DB_DATE]);
       int ecp   = atoi(db[y][i][DB_COMP]);
       int clen  = strlen(db[y][i][DB_ROUND]);
       int repl  = (db[y][i][DB_ROUND][clen-1] == 'r' || db[y][i][DB_ROUND][clen-1] == 'R');
@@ -924,8 +925,8 @@ void VsPage(int t) {
       fprintf(of, "<TD><IMG SRC=\"../../../thumbs/22/3/%s.png\"/>", flag);
       char *hname = NameOf(L, home, year);
       fprintf(of, "%s</TD>", hname);
-      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d%s.html\">%d-%d</A></TD>",
-              fxcol[wxl], year, home, away, (repl?"r":""), x1, x2);
+      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d-%d.html\">%d-%d</A></TD>",
+              fxcol[wxl], year, home, away, zi, x1, x2);
       FlagOf(away);
       fprintf(of, "<TD><IMG SRC=\"../../../thumbs/22/3/%s.png\"/>", flag);
       char *aname = NameOf(L, away, year);

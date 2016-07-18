@@ -102,7 +102,6 @@ char  db[DB_ROWS][DB_COLS][DB_CELL];
 char edb[DB_ROWS][EV_COLS][DB_CELL];
 char catalog[CAT_ROWS][128];
 int  tid[MAX_N];
-int	 nrept, reptid[MAX_N], nrep[MAX_N][MAX_N];
 int  plid[MAX_N][MAX_ROSTER];
 char *club[MAX_NAMES];
 char rmnem[MAX_N][MAX_ROSTER][7];
@@ -230,10 +229,6 @@ void ResetStats() {
      pesez[i] = pemeci[i] = petit[i] = peint[i] = perez[i] = peban[i] = pemin[i] = pegol[i] = pegre[i] = 0;
      pernk[i] = i;
   }
-	nrept = 0;
-	for (int i=0; i<MAX_N; i++) {
-		for (int j=0; j<MAX_N; j++) nrep[i][j] = 0;
-	}
 }
 
 void InitStats() {
@@ -438,14 +433,6 @@ int FindTid(int t) {
 		if (tid[i]==t) return i;
 	}
 	return -1;
-}
-
-int FindReptid(int t) {
-	for (int i=0; i<nrept; i++) {
-		if (reptid[i]==t) return i;
-	}
-	reptid[nrept++] = t;
-	return nrept-1;
 }
 
 int FindComp(char *mn) {
@@ -1604,18 +1591,11 @@ void PrintReport(int r) {
 	RoundName(db[r][DB_ROUND]);
 	int a = atoi(db[r][DB_HOME]);
 	int b = atoi(db[r][DB_AWAY]);
+    int z = CompactDate(db[r][DB_DATE]);
 	home = a;
 	away = b;
 	score = atoi(db[r][DB_SCORE]);
-	int ta = FindReptid(a);
-	int tb = FindReptid(b);
-	char srepl[12]; srepl[0] = 0;
-	if (ta>=0 && tb>=0) {
-		nrep[ta][tb]++;
-		for (int ri=2; ri<=nrep[ta][tb]; ri++) srepl[ri-2] = 'r';
-		srepl[nrep[ta][tb]-1] = 0;
-	}
-  sprintf(rfilename, "html/reports/%d/n%d-%d%s.html", year, a, b, srepl);
+  sprintf(rfilename, "html/reports/%d/n%d-%d-%d.html", year, a, b, z);
   of = fopen(rfilename, "wt");
   if (of==NULL) { fprintf(stderr, "ERROR: Could not open file %s.\n", rfilename); return; }
 
@@ -1754,10 +1734,10 @@ void SynopticTable() {
 		int ny = GetYear(db[i][DB_DATE]);
 		int home  = atoi(db[i][DB_HOME]);
 		int away  = atoi(db[i][DB_AWAY]);
+		int zi    = CompactDate(db[i][DB_DATE]);
 		int score = atoi(db[i][DB_SCORE]);
 		int ecp   = atoi(db[i][DB_COMP]);
 		int clen  = strlen(db[i][DB_ROUND]);
-		int repl  = (db[i][DB_ROUND][clen-1] == 'r' || db[i][DB_ROUND][clen-1] == 'R');
 		int x1 = score/100;
 		int x2 = score%100;
 		int wxl=0;
@@ -1771,15 +1751,6 @@ void SynopticTable() {
             if (x1>x2) wxl = 2;
           }
         }
-
-		int ta = FindReptid(home);
-		int tb = FindReptid(away);
-		char srepl[12]; srepl[0] = 0;
-		if (ta>=0 && tb>=0) {
-			nrep[ta][tb]++;
-			for (int ri=2; ri<=nrep[ta][tb]; ri++) srepl[ri-2] = 'r';
-			srepl[nrep[ta][tb]-1] = 0;
-		}
 
 	if (ny!=year) continue;
     fprintf(f, "<TR ");
@@ -1803,8 +1774,8 @@ void SynopticTable() {
         char sscore[6]; strcpy(sscore, "-");
         if (score>=0) sprintf(sscore, "%d-%d", x1, x2);
 		fprintf(f, "%s</TD>", NameOf(CL, home, year));
-		fprintf(f, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"reports/%d/n%d-%d%s.html\">%s</A></TD>",
-			fxcol[wxl], year, home, away, srepl, sscore);
+		fprintf(f, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"reports/%d/n%d-%d-%d.html\">%s</A></TD>",
+			fxcol[wxl], year, home, away, zi, sscore);
 		FlagOf(away);
     fprintf(f, "<TD><IMG SRC=\"../../thumbs/22/3/%s.png\"/>", flag);
 		fprintf(f, "%s</TD>", NameOf(CL, away, year));
@@ -1910,11 +1881,6 @@ void SynopticTable() {
   fprintf(f, "</TABLE>");
   fprintf(f, "</BODY>\n</HTML>\n");
   fclose(f);
-
-  nrept = 0;
-  for (int i=0; i<MAX_N; i++) {
-    for (int j=0; j<MAX_N; j++) nrep[i][j] = 0;
-  }
 }
 
 //---------------------------------------------
@@ -1962,10 +1928,6 @@ int main(int argc, char* argv[]) {
 
   for (int i=0; i<NM; i++) {
     PrintReport(i);
-  }
-
-  for (int i=0; i<MAX_N; i++) {
-    for (int j=0; j<MAX_N; j++) nrep[i][j] = 0;
   }
 
   SynopticTable();

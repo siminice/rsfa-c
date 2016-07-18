@@ -494,7 +494,8 @@ void Cup(int y) {
 			char srepl[12];
 			for (int ri=2; ri<=nreplay; ri++) srepl[ri-2]='r';
 			srepl[nreplay-1] = 0;
-      fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/c%d-%d%s.html\">", m_year, m_home, m_guest, srepl);
+      int zi = 50*((m_month-1)%12+1) + m_day;
+      fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/c%d-%d-%d.html\">", m_year, m_home, m_guest, zi);
       if (m_score[0]>=0 && m_score[1]>=0) fprintf(of, "%d-%d", m_score[0], m_score[1]);
       if ((m_score[0]+m_score[1]>0) && m_score[2]>=0 && m_score[3]>=0) {
         fprintf(of, " (%d-%d", m_score[2], m_score[3]);

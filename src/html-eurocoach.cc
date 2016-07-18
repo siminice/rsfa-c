@@ -512,6 +512,7 @@ void HTMLEuroCoach(int c) {
     int hid = atoi(db[y][k][DB_HOME]);
     int aid = atoi(db[y][k][DB_AWAY]);
     int scr = atoi(db[y][k][DB_SCORE]);
+    int zi  = CompactDate(db[y][k][DB_DATE]);
     int x1 = scr/100;
     int x2 = scr%100;
     if (hid<EURO) {
@@ -524,8 +525,8 @@ void HTMLEuroCoach(int c) {
     }
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", db[y][k][DB_DATE]);
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NameOf(L, hid, year));
-    fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d.html\">%d-%d</A></TD>",
-        fxcol[wxl], year, hid, aid, scr/100, scr%100);
+    fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d-%d.html\">%d-%d</A></TD>",
+        fxcol[wxl], year, hid, aid, zi, scr/100, scr%100);
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NameOf(L, aid, year));
     EcupMnem(db[y][k][DB_COMP], year);
     RoundName(db[y][k][DB_ROUND]);

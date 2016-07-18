@@ -217,6 +217,9 @@ PlayerStats::PlayerStats(Catalog *p, int o) {
   for (int i=0; i<numP; i++) ps[i].reset();
 }
 
+static int NumericDate(char *s) {
+}
+
 static int Idx(char *s, char **tab, int n) {
   for (int i=0; i<n; i++) {
     if (strcmp(s, tab[i])==0) return i;
@@ -790,4 +793,19 @@ int Locations::FindVenue(char *s) {
   for (int i=0; i<nv; i++)
     if (strcmp(V[i].mnem, s)==0) return i;
   return -1;
+}
+
+int CompactDate(char *s) {
+  if (s==NULL) return 0;
+  char sw[60];
+  strcpy(sw, s);
+  char *sd = strtok(sw, "@");
+  char *sh = strtok(NULL, ",");
+  if (sd==NULL) return 0;
+  char *sz = strtok(sd, "-");
+  char *sm = strtok(NULL, "-");
+  int nz=0, nm=0;
+  if (sz) nz = atoi(sz);
+  if (sm) nm = atoi(sm);
+  return 50*nm+nz;
 }

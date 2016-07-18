@@ -170,4 +170,6 @@ class PlayerStats {
     void print();
 };
 
+int CompactDate(char *);
+
 #endif

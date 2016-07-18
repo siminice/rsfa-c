@@ -46,7 +46,6 @@ const char *month[] = {"", "Ian", "Feb", "Mar", "Apr", "Mai", "Iun",
                      "Iul", "Aug", "Sep", "Oct", "Noi", "Dec"};
 const char *romonth[] = {"", "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
                      "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"};
-const char *suffix[] = {"", "r", "rr", "rrr", "rrrr"};
 int borna[256];
 char **club;
 char **mnem;
@@ -1079,8 +1078,8 @@ void DatesTable(int r) {
 
 void printScoreLink(int h, int i, int j) {
   int rs = res[h][i][j];
-  fprintf(of, "<A HREF=\"reports/%d/%d-%d%s.html\"><FONT COLOR=\"black\">%d-%d</FONT></A>", 
-    year, id[i], id[j], suffix[h], rs/100, rs%100);
+  fprintf(of, "<A HREF=\"reports/%d/%d-%d-%d.html\"><FONT COLOR=\"black\">%d-%d</FONT></A>",
+    year, id[i], id[j], round[h][i][j]%1000, rs/100, rs%100);
 }
 
 void printScore(int h, int i, int j, int rs) {
@@ -1093,8 +1092,8 @@ void printScore(int h, int i, int j, int rs) {
     }
     return;
   }
-  fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/%d-%d%s.html\">%d-%d</A></TD>", 
-    year, i, j, suffix[h], rs/100, rs%100);
+  fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/%d-%d-%d.html\">%d-%d</A></TD>",
+    year, id[i], id[j], round[h][i][j]%1000, rs/100, rs%100);
 }
 
 void ResTable(int r) {
@@ -1161,7 +1160,7 @@ void ResTable(int r) {
     if (ty < 0) ty += 100;
     fprintf(of, "<TD>%02d-%02d-%02d</TD>", rd%50, rd/50, ty);
     fprintf(of, "<TD ALIGN=\"right\">%s</TD>", NickOf(L, id[i], year));
-    printScore(h, id[i], id[j], rs);
+    printScore(h, i, j, rs);
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NickOf(L, id[j], year));
     fprintf(of, "</TR>");
 //    fprintf(of, "<TR><TD COLSPAN=\"4\"></TD><TR>");

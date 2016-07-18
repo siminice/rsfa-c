@@ -732,6 +732,7 @@ void VsPage(int t) {
       if (home != t*1000 && away != t*1000) continue;
       int year  = GetYear(db[y][i][DB_DATE]);
       int score = atoi(db[y][i][DB_SCORE]);
+      int zi    = CompactDate(db[y][i][DB_DATE]);
       int ecp   = atoi(db[y][i][DB_COMP]);
       int clen  = strlen(db[y][i][DB_ROUND]);
       int repl  = (db[y][i][DB_ROUND][clen-1] == 'r' || db[y][i][DB_ROUND][clen-1] == 'R');
@@ -783,8 +784,8 @@ void VsPage(int t) {
           char sscore[6]; strcpy(sscore, "-");
           if (score>=0) sprintf(sscore, "%d-%d", x1, x2);
       fprintf(of, "%s</TD>", NameOf(CL, home, y+NFY));
-      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/n%d-%d.html\">%s</A></TD>",
-        fxcol[wxl], year, home, away, sscore);
+      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/n%d-%d-%d.html\">%s</A></TD>",
+        fxcol[wxl], year, home, away, zi, sscore);
       FlagOf(away);
       fprintf(of, "<TD><IMG SRC=\"../../../thumbs/22/3/%s.png\"/>", flag);
       fprintf(of, "%s</TD>", NameOf(CL, away, y+NFY));
