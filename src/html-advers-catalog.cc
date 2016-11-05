@@ -212,7 +212,8 @@ int Load() {
   return 1;
 }
 
-int CompactDate(char *s) {
+
+int CompactDateLocal(char *s) {
   if (s==NULL) return 0;
   char sw[60];
   strcpy(sw, s);
@@ -403,6 +404,10 @@ int  rid[ROSTER_SIZE];
 const char *oldECmnem[] = {"SC", "CCE", "CWC", "UEFA"};
 const char *intECmnem[] = {"SC", "LC", "CWC", "UEFA"};
 const char *newECmnem[] = {"SC", "LC", " ", "EL"};
+
+const char *romonth[] = {"", "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
+                     "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"};
+
 
 /* *************************************** */
 
@@ -616,6 +621,7 @@ void websafeMnem(char *om, char *nm) {
 
 #define DOB_DD_MM_YYYY	0
 #define DOB_YYYYMMDD	1
+#define DOB_FULL        2
 
 int NumericDOB(char *dob, int fmt) {
   char s[12];
@@ -663,6 +669,15 @@ void CanonicDOB(char *dob, int fmt) {
   }
   else if (fmt==DOB_YYYYMMDD) {
     sprintf(dob, "%04d%02d%02d", xy, xm, xd);
+  }
+  else if (fmt==DOB_FULL) {
+    if (xd > 0) {
+      sprintf(dob, "%d %s %d", xd, romonth[xm], xy);
+    } else if (xy>0) {
+      sprintf(dob, "%s %d", romonth[xm], xy);
+    } else {
+      dob[0] = 0;
+    }
   }
 }
 
@@ -1153,7 +1168,17 @@ void PlayerStats(int pl) {
   }
 */
 
-	fprintf(of, "<H3>Lista meciurilor 螸potriva echipelor rom滱e演i</H3>\n");
+  char sdob[64];
+  strcpy(sdob, pdob[pl]);
+  CanonicDOB(sdob, DOB_FULL);
+  fprintf(of, "<UL><LI>Data na演erii: %s </LI>\n", sdob);
+  fprintf(of, "<LI>Locul na演erii: %s\n", ppob[pl]);
+  if (pjud[pl]!=NULL && pjud[pl][0]!=0 && pjud[pl][0]!=' ') {
+      fprintf(of, " (%s)", pjud[pl]);
+  }
+  fprintf(of, "</LI>\n");
+
+  fprintf(of, "<H3>Lista meciurilor 螸potriva echipelor rom滱e演i</H3>\n");
   fprintf(of, "<TABLE cellpadding=\"1\" WIDTH=\"80%%\" RULES=\"groups\" frame=\"box\">\n");
   fprintf(of, "<COLGROUP><COL SPAN=\"5\"></COLGROUP>");
   fprintf(of, "<COLGROUP><COL SPAN=\"2\"></COLGROUP>");
@@ -1211,7 +1236,7 @@ void PlayerStats(int pl) {
 			int aid = atoi(ladb[y][k][DB_AWAY]);
 			int scr = atoi(ladb[y][k][DB_SCORE]);
             int ny  = GetYear(ladb[y][k][DB_DATE]);
-            int zi  = CompactDate(ladb[y][k][DB_DATE]);
+            int zi  = CompactDateLocal(ladb[y][k][DB_DATE]);
 			int ecl = ladb[y][k][DB_COMP][0] - 48;
 			int rnd = atoi(ladb[y][k][DB_ROUND]);
 			int haw = mlist[pl][i+1]/10000;

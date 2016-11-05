@@ -46,6 +46,10 @@ int Stat::numg() {
 	return win+drw+los;
 }
 
+int Stat::pts(int ppv) {
+  return ppv*win+drw;
+}
+
 double Stat::pct() {
 	int ng = win+drw+los;
 	if (ng==0) return 0.0;
@@ -53,10 +57,12 @@ double Stat::pct() {
 }
 
 void Stat::addRes(int x, int y) {
-	gsc += x; gre += y;
-	if (x>y) ++win;
-	else if (x==y) ++drw;
-	else ++los;
+  if (x>=0 && y>=0) {
+    gsc += x; gre += y;
+    if (x>y) ++win;
+    else if (x==y) ++drw;
+    else ++los;
+  }
 }
 
 void Stat::add(Stat *x) {

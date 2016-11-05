@@ -758,24 +758,24 @@ void PlayerRanking(int cr) {
 }
 
 void HTMLTeamRankingHeader(int ct) {
-  fprintf(of, "<TABLE class=\"sortable\" width=\"50%%\" cellpadding=\"2\" frame=\"box\">\n");
+  fprintf(of, "<TABLE class=\"sortable\" width=\"60%%\" cellpadding=\"2\" frame=\"box\">\n");
   fprintf(of, "<THEAD><TR BGCOLOR=\"CCCCCC\">\n");
   fprintf(of, "<TH WIDTH=\"5%%\">#</TH>");
   if (ct) {
-    fprintf(of, "<TH WIDTH=\"35%%\">Þara</TH>");
+    fprintf(of, "<TH WIDTH=\"40%%\">Þara</TH>");
   } else {
-    fprintf(of, "<TH WIDTH=\"35%%\">Echipa</TH>");
+    fprintf(of, "<TH WIDTH=\"40%%\">Echipa</TH>");
   }
   fprintf(of, "<TH WIDTH=\"5%%\">Meciuri</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Victorii</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Egaluri</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Infrâng.</TH>");
 //  fprintf(of, "<TH WIDTH=\"15%%\" COLSPAN=\"3\">Golaveraj</TH>");
-  fprintf(of, "<TH WIDTH=\"7%%\"></TH>");
+  fprintf(of, "<TH WIDTH=\"8%%\">gm</TH>");
   fprintf(of, "<TH WIDTH=\"1%%\"></TH>");
-  fprintf(of, "<TH WIDTH=\"7%%\"></TH>");
-  fprintf(of, "<TH WIDTH=\"10%%\">Puncte</TH>");
-  fprintf(of, "<TH WIDTH=\"10%%\">Procentaj%%</TH>");
+  fprintf(of, "<TH WIDTH=\"7%%\">gp</TH>");
+  fprintf(of, "<TH WIDTH=\"7%%\">Puncte</TH>");
+  fprintf(of, "<TH WIDTH=\"7%%\">Procentaj%%</TH>");
   fprintf(of, "</TR></THEAD>\n");
 }
 
@@ -1002,7 +1002,7 @@ void VsPage(int t) {
 int main(int argc, char* argv[]) {
   char filename[256];
   EFY = 1957;
-  ELY = 2016;
+  ELY = 2017;
 
   if (!Load()) {
     printf("ERROR: called from invalid drectory.\n");
@@ -1027,7 +1027,7 @@ int main(int argc, char* argv[]) {
   ELoc->Load("eurocity.dat", "eurostadium.dat");
   Ct = new Ranking(NN);
   Cl = new Ranking(MAX_TEAMS);
-  Crom = new Ranking(MAX_TEAMS);
+  Crom = new Ranking(MAX_NPL);
 
   InitStats();
 

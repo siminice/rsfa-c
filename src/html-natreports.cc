@@ -891,6 +891,7 @@ void GetEvents(int r, int a, int b) {
       	else if (edb[r][i][6]=='/') evt[i] = EV_PKMISS;
       	else if (edb[r][i][6]=='#') evt[i] = EV_YELLOW;
       	else if (edb[r][i][6]=='!') evt[i] = EV_RED;
+        else if (edb[r][i][6]=='*') evt[i] = EV_YELLOWRED;
 			}
       nev++;
       if (em < PSO_TIME) nrev++; else pso = 1;

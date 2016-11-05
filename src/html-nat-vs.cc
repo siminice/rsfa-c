@@ -868,9 +868,10 @@ void HTMLTeamRankingTable(Ranking *tr) {
   fprintf(of, "<TH WIDTH=\"5%%\">Victorii</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Egaluri</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Infrâng.</TH>");
-  fprintf(of, "<TH WIDTH=\"15%%\" COLSPAN=\"3\">Golaveraj</TH>");
-//  fprintf(of, "<TH WIDTH=\"1%%\"></TH>");
-//  fprintf(of, "<TH WIDTH=\"4%%\">Gol-</TH>");
+//  fprintf(of, "<TH WIDTH=\"15%%\" COLSPAN=\"3\">Golaveraj</TH>");
+  fprintf(of, "<TH WIDTH=\"7%%\">gm</TH>");
+  fprintf(of, "<TH WIDTH=\"1%%\"></TH>");
+  fprintf(of, "<TH WIDTH=\"7%%\">gp</TH>");
   fprintf(of, "<TH WIDTH=\"10%%\">Puncte</TH>");
   fprintf(of, "<TH WIDTH=\"10%%\">Procentaj%%</TH>");
   fprintf(of, "</TR></THEAD>\n");
@@ -892,7 +893,7 @@ void HTMLTeamRankingTable(Ranking *tr) {
       fprintf(of, "<TD>-</TD>");
       fprintf(of, "<TD ALIGN=\"left\">%d</TD>", s.gre);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", 2*s.win+s.drw);
-      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", (int)(100*s.pct()));
+      fprintf(of, "<TD ALIGN=\"right\">%d%%</TD>", (int)(100*s.pct()));
       fprintf(of, "</TR>\n");
     }
   }

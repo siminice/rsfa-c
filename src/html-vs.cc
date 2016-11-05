@@ -104,8 +104,7 @@ int wg[MAX_LEVELS], dg[MAX_LEVELS], lg[MAX_LEVELS], sg[MAX_LEVELS], rg[MAX_LEVEL
 //--- player stats
 Catalog *Pl;
 int NP;
-int *psez, *pfy, *ply, *pmeci, *ptit, *pint, *prez, *pban, *pmin, *pgol, *ppen, *pgre, *pown, *prnk;
-int *qsez, *qfy, *qly ,*qmeci, *qtit, *qint, *qrez, *qban, *qmin, *qgol, *qpen, *qgre, *qown, *qrnk;
+int *psez, *pfy, *ply, *pmeci, *ptit, *pint, *prez, *pban, *pmin, *pgol, *ppen, *pgre, *pown, *pred, *prnk;
 char ***cldb;
 char ***cedb;
 char ***kldb;
@@ -570,10 +569,8 @@ void SeasonName(int y, char *ss) {
 
 void ResetPlayerStats() {
   for (int i=0; i<NP; i++) {
-     psez[i] = pfy[i] = ply[i] = pmeci[i] = ptit[i] = pint[i] = prez[i] = pban[i] = pmin[i] = pgol[i] = ppen[i] = pown[i] = pgre[i] = 0;
+     psez[i] = pfy[i] = ply[i] = pmeci[i] = ptit[i] = pint[i] = prez[i] = pban[i] = pmin[i] = pgol[i] = ppen[i] = pown[i] = pgre[i] = pred[i] = 0;
      prnk[i] = i;
-     qsez[i] = qfy[i] = qly[i] = qmeci[i] = qtit[i] = qint[i] = qrez[i] = qban[i] = qmin[i] = qgol[i] = qpen[i] = qown[i] = qgre[i] = 0;
-     qrnk[i] = i;
   }
 }
 
@@ -594,22 +591,8 @@ void LoadCatalog() {
   ppen  = new int[MAX_NAMES];
   pown  = new int[MAX_NAMES];
   pgre  = new int[MAX_NAMES];
+  pred  = new int[MAX_NAMES];
   prnk  = new int[MAX_NAMES];
-
-  qsez  = new int[MAX_NAMES];
-  qfy   = new int[MAX_NAMES];
-  qly   = new int[MAX_NAMES];
-  qmeci = new int[MAX_NAMES];
-  qtit  = new int[MAX_NAMES];
-  qint  = new int[MAX_NAMES];
-  qrez  = new int[MAX_NAMES];
-  qban  = new int[MAX_NAMES];
-  qmin  = new int[MAX_NAMES];
-  qgol  = new int[MAX_NAMES];
-  qpen  = new int[MAX_NAMES];
-  qown  = new int[MAX_NAMES];
-  qgre  = new int[MAX_NAMES];
-  qrnk  = new int[MAX_NAMES];
 
   ResetPlayerStats();
 }
@@ -758,6 +741,8 @@ void AddPlayerStats(int a, int b, int y, char ***ldb, char ***edb, int r) {
                 pgol[pid]++; ppen[pid]++;
               } else if (evt==96) {
                 pown[pid]++;
+              } else if (evt==33) {
+                pred[pid]++;
               }
             }
         }
@@ -1099,6 +1084,7 @@ void HTMLLineupsHeader() {
   fprintf(of, "<TH>Pen</TH>");
   fprintf(of, "<TH>Auto</TH>");
   fprintf(of, "<TH>Gol/-</TH>");
+  fprintf(of, "<TH>Elim</TH>");
   fprintf(of, "</TR></THEAD>\n");
 }
 
@@ -1131,6 +1117,7 @@ void HTMLPlayerStatsTable() {
     fprintf(of, "<TD align=\"right\">%d</TD>", ppen[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pown[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pgre[x]);
+    fprintf(of, "<TD align=\"right\">%d</TD>", pred[x]);
     fprintf(of, "</TR>\n");
   }
   fprintf(of, "</TABLE>");

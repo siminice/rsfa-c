@@ -1310,7 +1310,9 @@ void GetEvents(int r, int a, int b) {
            if (edb[mid][i][6]=='`') evt[i] = EV_OWNGOAL;
       else if (edb[mid][i][6]=='"') evt[i] = EV_PKGOAL;
       else if (edb[mid][i][6]=='/') evt[i] = EV_PKMISS;
+      else if (edb[mid][i][6]=='#') evt[i] = EV_YELLOW;
       else if (edb[mid][i][6]=='!') evt[i] = EV_RED;
+      else if (edb[mid][i][6]=='*') evt[i] = EV_YELLOWRED;
       nev++;
     }
   }
@@ -1380,6 +1382,7 @@ void HTMLEventsBlock(int r, int a, int b) {
     if (evt[e]==EV_OWNGOAL) {
       hsc = 1-hsc;
     }
+    if (evt[e]!=EV_YELLOW) {
     if (hsc==1) {
       fprintf(of, "    <tr class=\"event    expanded\">\n");
       fprintf(of, "      <td class=\"player player-a\">\n");
@@ -1420,6 +1423,7 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "      </td>\n");
       fprintf(of, "    </tr>\n");
     }
+    } // not yellow
   }
 /*
   for (int i=0; i<x; i++) {

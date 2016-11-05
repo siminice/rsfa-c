@@ -62,6 +62,7 @@ class Stat {
 	void reset();
 	int numg();
 	double pct();
+    int pts(int ppv);
 	void add(Stat*);
 	void addRes(int x, int y);
 	int sup(Stat *x, int rule=0);

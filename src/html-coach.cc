@@ -47,7 +47,7 @@ int FY, LY;
 int id[MAX_TEAMS], res[MAX_RR][MAX_TEAMS][MAX_TEAMS], rnd[MAX_RR][MAX_TEAMS][MAX_TEAMS];
 int NC, NT, NK, ppv, tbr, pr1, pr2, rel1, rel2, r, z;
 int hc[MAX_NAMES][MAX_SEASONS];
-int ns[MAX_NAMES], fs[MAX_NAMES], ls[MAX_NAMES], nch[MAX_NAMES];
+int ns[MAX_NAMES], fs[MAX_NAMES], ls[MAX_NAMES], nch[MAX_NAMES], nret[MAX_NAMES];
 int ntm[MAX_SEASONS];
 int champ[MAX_SEASONS], champ_mid[MAX_SEASONS], champ_coach[MAX_SEASONS];
 int num_winter;
@@ -496,6 +496,7 @@ void HTMLTable() {
   fprintf(of, "<TH>Primul</TH>");
   fprintf(of, "<TH>Ultimul</TH>");
   fprintf(of, "<TH>Titluri</TH>");
+  fprintf(of, "<TH>Retrogr.</TH>");
   fprintf(of, "<TH>Meciuri</TH>");
   fprintf(of, "<TH>Vict.</TH>");
   fprintf(of, "<TH>Egal.</TH>");
@@ -526,7 +527,10 @@ void HTMLTable() {
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", fs[co]);
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ls[co]);
 			if (nch[co]>0) {
-			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", nch[co]);
+  			  fprintf(of, "<TD ALIGN=\"right\"><B>%d</B></TD>", nch[co]);
+			} else { fprintf(of, "<TD></TD>"); }
+			if (nret[co]>0) {
+  			  fprintf(of, "<TD ALIGN=\"right\">%d</TD>", nret[co]);
 			} else { fprintf(of, "<TD></TD>"); }
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ng);
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.win);
@@ -535,7 +539,7 @@ void HTMLTable() {
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.gsc);
 			fprintf(of, "<TD>-</TD>");
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.gre);
-			fprintf(of, "<TD ALIGN=\"right\">[%d%%]</TD>", (int)(100*s.pct()));
+			fprintf(of, "<TD ALIGN=\"right\">%d%%</TD>", (int)(100*s.pct()));
 			fprintf(of, "</TR>\n");
 		}
 	}
@@ -551,7 +555,7 @@ void HTMLStatLine(FILE *of, int nl, int year, int tm, Stat *s, int bold) {
     fprintf(of, "\n<TR");
     if (nl%2==1) fprintf(of, " BGCOLOR=\"BBFFFF\"");
     fprintf(of, ">");
-		fprintf(of, "<TD><A HREF=\"../../a.%d-r1.html\">%s</A></TD>", year, (tm>=0?ssn:""));
+		fprintf(of, "<TD><A HREF=\"../a.%d-r1.html\">%s</A></TD>", year, (tm>=0?ssn:""));
 		if (bold>0) {
 		fprintf(of, "<TD><B>%s</B></TD>", (tm>=0?NickOf(L, tm, year):"Total"));
 		} else { fprintf(of, "<TD>%s</TD>", (tm>=0?NickOf(L, tm, year):"Total")); };
@@ -583,7 +587,7 @@ void HTMLCoach(int c) {
 
 	fprintf(stderr, "%d.%s %s\n", c+1, p.pren, p.name);
   fprintf(of, "<HTML>\n<TITLE>%s %s</TITLE>\n", p.pren, p.name);
-  fprintf(of, "<HEAD>\n<link href=\"css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
+  fprintf(of, "<HEAD>\n<link href=\"../css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(of, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
   fprintf(of, "</HEAD>\n<BODY>\n");
 

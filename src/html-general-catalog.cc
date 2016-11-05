@@ -553,9 +553,9 @@ void Collect(int year) {
         db[n][i][k] = new char[l+1];
         strcpy(db[n][i][k], tok[k]);
       }
-    }    
+    }
     i++;
-    db[n][i] = NULL;
+//    db[n][i] = NULL;
 
     s[0] = 0;
   } while (!feof(f));
@@ -590,10 +590,9 @@ void CollectCup(int year) {
         kdb[n][i][k] = new char[l+1];
         strcpy(kdb[n][i][k], tok[k]);
       }
-    }    
+    }
     i++;
-    kdb[n][i] = NULL;
-
+//    kdb[n][i] = NULL;
     s[0] = 0;
   } while (!feof(f));
   fclose(f);
@@ -610,12 +609,12 @@ void CollectEC(int year) {
     fprintf(stderr, "ERROR: Cannot open file %s.\n", filename);
     return;
   }
-  
+
   int i = 0;
   int n = year - ECFY;
   do {
     fgets(s, 1000, f);
-    if (strlen(s)<10) continue;
+    if (feof(f) || strlen(s)<10) continue;
     tok[0] = strtok(s, ",\n");
     for (int k=1; k<TD_NUM; k++) tok[k] = strtok(NULL, ",\n");
 
@@ -627,11 +626,9 @@ void CollectEC(int year) {
         edb[n][i][k] = new char[l+1];
         strcpy(edb[n][i][k], tok[k]);
       }
-    }    
+    }
     i++;
-    edb[n][i] = NULL;
-
-    s[0] = 0;
+//    edb[n][i] = NULL;
   } while (!feof(f));
   fclose(f);
 }
@@ -664,10 +661,9 @@ void CollectNat(int year) {
         ndb[n][i][k] = new char[l+1];
         strcpy(ndb[n][i][k], tok[k]);
       }
-    }    
+    }
     i++;
     ndb[n][i] = NULL;
-
     s[0] = 0;
   } while (!feof(f));
   fclose(f);
@@ -911,10 +907,10 @@ void HTMLFooter() {
 int main(int argc, char **argv) {
 
   verbosity = 2;
-  FY   = 1933; LY   = 2013;
-  KFY  = 1934; KLY  = 2013;
-  ECFY = 1957; ECLY = 2014;
-  NFY  = 1922; NLY  = 2013;
+  FY   = 1933; LY   = 2017;
+  KFY  = 1934; KLY  = 2017;
+  ECFY = 1957; ECLY = 2017;
+  NFY  = 1922; NLY  = 2017;
   tm = -1;
   pl = 0;
   cr = CR_M;
@@ -951,24 +947,28 @@ int main(int argc, char **argv) {
   db = new char***[nums];
   for (int s=0; s<nums; s++) {
      db[s] = new char**[MAX_DB];
+     for (int i=0; i<MAX_DB; i++) db[s][i] = NULL;
   }
 
   int numks = KLY-KFY+1;
   kdb = new char***[numks];
   for (int s=0; s<numks; s++) {
      kdb[s] = new char**[MAX_KDB];
+     for (int i=0; i<MAX_KDB; i++) kdb[s][i] = NULL;
   }
 
   int numecs = ECLY-ECFY+1;
   edb = new char***[numecs];
   for (int s=0; s<numecs; s++) {
      edb[s] = new char**[MAX_EDB];
+     for (int i=0; i<MAX_EDB; i++) edb[s][i] = NULL;
   }
 
   int numns = NLY-NFY+1;
   ndb = new char***[numns];
   for (int s=0; s<numns; s++) {
      ndb[s] = new char**[MAX_NDB];
+     for (int i=0; i<MAX_NDB; i++) ndb[s][i] = NULL;
   }
 
   pdb = new char**[MAX_PSZ];

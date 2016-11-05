@@ -47,7 +47,7 @@
 #define EV_PKMISS	 3
 #define EV_YELLOW	 4
 #define EV_RED	 	 5
-#define EV_YELLOWRED	 6
+#define EV_YELLOWRED 6
 #define PSO_TIME    200
 
 //burdca,Carol,Burdan,00/00/1912,ROM,173, , ,3,3,0,-11
@@ -78,6 +78,7 @@ const char *evicon[] = {"g", "og", "pg", "pm", "cg" , "cr", "cgr"};
 const char *cupmnem[] = {"SC", "CCE", "CC", "UEFA"};
 const char *cupround[] = {"Câºtigãtoare", "Finala", "Semifinale", "Sferturi", "Optimi", "ªaisprezecimi", "1/32", "1/64"};
 const char *cuprmnem[] = {" ", "F", "S", "Q", "O", "ª", "32", "64"};
+const char* fxcol[] = {"F0F0B0", "AAFFAA", "FF8888"};
 
 char **club;
 char **mnem;
@@ -651,7 +652,11 @@ void HTMLScoreBlock(int r, int a, int b) {
   fprintf(of, "  <div class=\"container middle\">\n");
   fprintf(of, "    <h1 class=\"thick scoretime \">\n");
   fprintf(of, "    <a href=\"../../vs-%04d/vs-%d-%d.html\">", a, a, b);
-  fprintf(of, "      %d - %d\n", sc/100, sc%100);
+  if (sc >= 0) {
+    fprintf(of, "      %d - %d\n", sc/100, sc%100);
+  } else {
+    fprintf(of, " - \n");
+  }
   fprintf(of, "    </a></h1>\n");
   fprintf(of, "  </div>\n\n");
 
@@ -868,6 +873,8 @@ void GetEvents(int r, int a, int b) {
       	else if (edb[r][i][6]=='"') evt[i] = EV_PKGOAL;
       	else if (edb[r][i][6]=='/') evt[i] = EV_PKMISS;
         else if (edb[r][i][6]=='!') evt[i] = EV_RED;
+        else if (edb[r][i][6]=='#') evt[i] = EV_YELLOW;
+        else if (edb[r][i][6]=='*') evt[i] = EV_YELLOWRED;
       }
       nev++;
       if (em<PSO_TIME) nrev++; else pso = 1;
@@ -953,7 +960,7 @@ void HTMLEventsBlock(int r, int a, int b) {
     if (evt[e]==EV_OWNGOAL) {
       hsc = 1-hsc;
     }
-    if (hsc==1) {
+    if (hsc==1 && evt[e]!=EV_YELLOW) {
       fprintf(of, "    <tr class=\"event    expanded\">\n");
       fprintf(of, "      <td class=\"player player-a\">\n");
       fprintf(of, "        <div>");
@@ -986,13 +993,13 @@ void HTMLEventsBlock(int r, int a, int b) {
       else if (evt[e]==EV_RED) {
         if (home<EURO && pid>=0) { pred[pid]++; }
       }
-      fprintf(of, "      <td class=\"event-icon\"><div>%d - %d</div></td>\n", cx, cy);
-      fprintf(of, "      <td class=\"player player-b\">\n");
-      fprintf(of, "        <div></div>\n");
-      fprintf(of, "      </td>\n");
-      fprintf(of, "    </tr>\n");
+        fprintf(of, "      <td class=\"event-icon\"><div>%d - %d</div></td>\n", cx, cy);
+        fprintf(of, "      <td class=\"player player-b\">\n");
+        fprintf(of, "        <div></div>\n");
+        fprintf(of, "      </td>\n");
+        fprintf(of, "    </tr>\n");
     }
-    else if (hsc==0) {
+    else if (hsc==0 && evt[e]!=EV_YELLOW) {
       fprintf(of, "    <tr class=\"event    expanded\">\n");
       fprintf(of, "      <td class=\"player player-a\">\n");
       fprintf(of, "        <div></div>\n");
@@ -1702,6 +1709,17 @@ void CanonicDOB(char *dob, int fmt) {
   }
 }
 
+int Wxl(int home, int away, int score) {
+  int x = score/100;
+  int y = score%100;
+  if (score<0 || x==y) return 0;
+  if (home < EURO) {
+    return (x>y? 1 : 2);
+  } else {
+    return (x>y? 2 : 1);
+  }
+}
+
 void SynopticTable() {
 	char sfilename[128];
 	sprintf(sfilename, "html/euro-%d.html", year);
@@ -1744,15 +1762,21 @@ void SynopticTable() {
 		int score = atoi(db[i][DB_SCORE]);
 		int ecp   = atoi(db[i][DB_COMP]);
 		int clen  = strlen(db[i][DB_ROUND]);
+    int wxl = Wxl(home, away, score);
     fprintf(f, "<TR ");
     if (i%2==1) fprintf(f, "BGCOLOR=\"DDFFFF\" ");
     fprintf(f, ">\n");
 		fprintf(f, "<TD ALIGN=\"left\">%s</TD>", db[i][DB_DATE]);
 		FlagOf(home);
-    fprintf(f, "<TD><IMG SRC=\"../../thumbs/22/3/%s.png\"/>", flag);
+        fprintf(f, "<TD><IMG SRC=\"../../thumbs/22/3/%s.png\"/>", flag);
 		fprintf(f, "%s</TD>", NameOf(L, home, year));
-		fprintf(f, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/e%d-%d-%d.html\">%d-%d</A></TD>",
-			year, home, away, zi, score/100, score%100);
+        fprintf(f, "<TD ALIGN=\"center\" BGCOLOR=\"%s\"><A HREF=\"reports/%d/e%d-%d-%d.html\">",
+          fxcol[wxl], year, home, away, zi);
+        if (score >= 0) {
+            fprintf(f, "%d-%d</A></TD>", score/100, score%100);
+        } else {
+            fprintf(f, "-</A></TD>");
+        }
 		FlagOf(away);
     fprintf(f, "<TD><IMG SRC=\"../../thumbs/22/3/%s.png\"/>", flag);
 		fprintf(f, "%s</TD>", NameOf(L, away, year));
@@ -1820,7 +1844,7 @@ void SynopticTable() {
 int main(int argc, char* argv[]) {
   char filename[256];
 	ECFY = 1957;
-	ECLY = 2016;
+	ECLY = 2017;
 
   if (!Load()) {
     printf("ERROR: called from invalid drectory.\n");
@@ -1840,12 +1864,11 @@ int main(int argc, char* argv[]) {
         ECLY = atoi(argv[++k]);
       }
     }
-  } else {
-    char sarg1[128];
-    strcpy(sarg1, argv[argc-1]);
-    year = atoi(sarg1);
-    SeasonName(year, ssn);
   }
+  char sarg1[128];
+  strcpy(sarg1, argv[argc-1]);
+  year = atoi(sarg1);
+  SeasonName(year, ssn);
   LoadAlltimeStats();
   Pl.Load("players.dat");
   EPl.Load("europlayers.dat");

@@ -453,6 +453,10 @@ void CollectData(int year) {
                  if (tid==0) rhpen[arb]++;
                  if (tid==1) rapen[arb]++;
                }
+               if (evt == 33) {
+                 if (tid==0) rhred[arb]++;
+                 if (tid==1) rared[arb]++;
+               }
              }
           }
         }
@@ -467,7 +471,7 @@ void ListData() {
 		int ng = RR->S[co].numg();
 		if (ng > 0) {
 			sprintf(nume, "%s %s", Arb->P[co].pren, Arb->P[co].name);
-			printf("%3d.%-32s %3d %4d [%4d%%]\n", i+1,
+			printf("%3d.%-32s %3d %4d %4d%%\n", i+1,
 				nume, ns[co], ng, (int)(100*RR->S[co].pct()));
 		}
 	}
@@ -496,8 +500,8 @@ void HTMLTable() {
   fprintf(of, "<TH>Meciuri</TH>");
   fprintf(of, "<TH>Central</TH>");
   fprintf(of, "<TH>Linie</TH>");
-  fprintf(of, "<TH>Penalty</TH>");
-  fprintf(of, "<TH>Cartonaºe roºii</TH>");
+  fprintf(of, "<TH>Penaltyuri</TH>");
+  fprintf(of, "<TH>Cart.roºii</TH>");
   fprintf(of, "<TH>%%Gazde</TH>");
   fprintf(of, "</TR></THEAD>\n");
 
@@ -524,8 +528,8 @@ void HTMLTable() {
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ng);
 			fprintf(of, "<TD ALIGN=\"right\">0</TD>");
 			fprintf(of, "<TD ALIGN=\"right\">%d - %d</TD>", rhpen[co], rapen[co]);
-			fprintf(of, "<TD ALIGN=\"right\"></TD>");
-			fprintf(of, "<TD ALIGN=\"right\">[%d%%]</TD>", (int)(100*s.pct()));
+			fprintf(of, "<TD ALIGN=\"right\">%d - %d</TD>", rhred[co], rared[co]);
+			fprintf(of, "<TD ALIGN=\"right\">%d%%</TD>", (int)(100*s.pct()));
 			fprintf(of, "</TR>\n");
 		}
 	}

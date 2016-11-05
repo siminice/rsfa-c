@@ -417,6 +417,7 @@ int GetYear(char *sd) {
 #define PTD_EURM	9
 #define PTD_EURN	10
 #define PTD_EURG	11
+#define PTD_HIDN    12
 #define PTD_NATM	2
 #define PTD_NATN	3
 #define PTD_NATT	3
@@ -494,6 +495,9 @@ const char *oldECmnem[] = {"SC", "CCE", "CWC", "UEFA"};
 const char *intECmnem[] = {"SC", "LC", "CWC", "UEFA"};
 const char *newECmnem[] = {"SC", "LC", " ", "EL"};
 
+const char *romonth[] = {"", "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
+                     "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"};
+
 /* *************************************** */
 
 int NP;
@@ -516,6 +520,7 @@ int *ppen;
 int *pmin;
 int *pown;
 int *prec;
+int *pyel;
 int *pred;
 int *rank;
 
@@ -601,6 +606,7 @@ void LoadPlayers() {
   pmin = new int[MAX_NAMES];
   pown = new int[MAX_NAMES];
   prec = new int[MAX_NAMES];
+  pyel = new int[MAX_NAMES];
   pred = new int[MAX_NAMES];
   rank = new int[MAX_NAMES];
   echn = new int[MAX_NAMES];
@@ -646,7 +652,7 @@ void LoadPlayers() {
        borna[c] = i;
      }
      psez[i] = pfy[i] = ply[i] = pmeci[i] = ptit[i] = prez[i] = pgol[i] = 0;
-		 pmin[i] = ppen[i] = pown[i] = prec[i] = pred[i] = 0;
+		 pmin[i] = ppen[i] = pown[i] = prec[i] = pyel[i] = pred[i] = 0;
      echn[i] = 0;
      rank[i] = i;
 	 clist[i][0] = 0;
@@ -664,7 +670,7 @@ void LoadPlayers() {
 void ResetStats() {
   for (int i=0; i<NP; i++) {
      psez[i] = pfy[i] = ply[i] = pmeci[i] = ptit[i] = prez[i] = pgol[i] = 0;
-		 pmin[i] = ppen[i] = pown[i] = prec[i] = pred[i] = 0;
+		 pmin[i] = ppen[i] = pown[i] = prec[i] = pyel[i] = pred[i] = 0;
      rank[i] = i;
   }
 }
@@ -707,6 +713,7 @@ void websafeMnem(char *om, char *nm) {
 
 #define DOB_DD_MM_YYYY	0
 #define DOB_YYYYMMDD	1
+#define DOB_FULL 2
 
 int NumericDOB(char *dob, int fmt) {
   char s[12];
@@ -754,6 +761,15 @@ void CanonicDOB(char *dob, int fmt) {
   }
   else if (fmt==DOB_YYYYMMDD) {
     sprintf(dob, "%04d%02d%02d", xy, xm, xd);
+  }
+  else if (fmt==DOB_FULL) {
+    if (xd > 0) {
+      sprintf(dob, "%d %s %d", xd, romonth[xm], xy);
+    } else if (xy>0) {
+      sprintf(dob, "%s %d", romonth[xm], xy);
+    } else {
+      dob[0] = 0;
+    }
   }
 }
 
@@ -1037,7 +1053,7 @@ void MergeDB(int year) {
 }
 
 void TeamStats(int year, int t, int pl) {
-  int sm, st, sr, sg, sn, sp, sa, sh, scr, xt;
+  int sm, st, sr, sg, sn, sp, sa, sh, scg, scr, xt;
   int n = year - CFY;
   int i = 0;
 
@@ -1059,7 +1075,7 @@ void TeamStats(int year, int t, int pl) {
     }
     sm = st = sr = sg = 0;
     sn = sp = sa = sh = 0;
-    scr = 0;
+    scg = scr = 0;
     if (ccdb[n][i][CAT_CAPS])   sm  = atoi(ccdb[n][i][CAT_CAPS]);
     if (ccdb[n][i][CAT_START])  st  = atoi(ccdb[n][i][CAT_START]);
     if (ccdb[n][i][CAT_SUB])    sr  = atoi(ccdb[n][i][CAT_SUB]);
@@ -1068,6 +1084,7 @@ void TeamStats(int year, int t, int pl) {
     if (ccdb[n][i][CAT_PK])     sp  = atoi(ccdb[n][i][CAT_PK]);
     if (ccdb[n][i][CAT_OWN])    sa  = atoi(ccdb[n][i][CAT_OWN]);
     if (ccdb[n][i][CAT_GREC])   sh  = atoi(ccdb[n][i][CAT_GREC]);
+    if (ccdb[n][i][CAT_YELLOW]) scg = atoi(ccdb[n][i][CAT_YELLOW]);
     if (ccdb[n][i][CAT_RED])    scr = atoi(ccdb[n][i][CAT_RED]);
 
     if (year !=1957) {
@@ -1079,6 +1096,7 @@ void TeamStats(int year, int t, int pl) {
 	  ppen[p]  += sp;
 	  pown[p]  += sa;
 	  prec[p]  += sh;
+      pyel[p]  += scg;
       pred[p]  += scr;
     }
 
@@ -1143,13 +1161,14 @@ void HTMLLineupsHeader() {
 //  fprintf(of, "<TH>Nr</TH>");
   fprintf(of, "<TH>Post</TH>");
   fprintf(of, "<TH>Meciuri</TH>");
-  fprintf(of, "<TH>Minute</TH>");
+  fprintf(of, "<TH>Min</TH>");
   fprintf(of, "<TH>Titular</TH>");
   fprintf(of, "<TH>Rezervã</TH>");
   fprintf(of, "<TH>Goluri</TH>");
   fprintf(of, "<TH>Pen</TH>");
   fprintf(of, "<TH>Auto</TH>");
   fprintf(of, "<TH>Gol/-</TH>");
+  fprintf(of, "<TH>Cg</TH>");
   fprintf(of, "<TH>Elim</TH>");
   fprintf(of, "</TR></THEAD>\n");
 }
@@ -1248,6 +1267,7 @@ void HTMLYearlyTeamStats(int t, int year) {
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_PK]);
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_OWN]);
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_GREC]);
+ 	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_YELLOW]);
  	   	fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_RED]);
 	    fprintf(of, "</TR>\n");
 			j++;
@@ -1259,7 +1279,7 @@ void HTMLYearlyTeamStats(int t, int year) {
 }
 
 void CupStats(int year, int t) {
-  int sm, st, sr, sg, sn, sp, sa, sh, scr, xt;
+  int sm, st, sr, sg, sn, sp, sa, sh, scg, scr, xt;
   int n = year - KFY;
   int i = 0;
 
@@ -1275,7 +1295,7 @@ void CupStats(int year, int t) {
 
     sm = st = sr = sg = 0;
     sn = sp = sa = sh = 0;
-    scr = 0;
+    scg = scr = 0;
     if (ckdb[n][i][CAT_CAPS])   sm = atoi(ckdb[n][i][CAT_CAPS]);
     if (ckdb[n][i][CAT_START])  st = atoi(ckdb[n][i][CAT_START]);
     if (ckdb[n][i][CAT_SUB])    sr = atoi(ckdb[n][i][CAT_SUB]);
@@ -1284,7 +1304,8 @@ void CupStats(int year, int t) {
     if (ckdb[n][i][CAT_PK])     sp = atoi(ckdb[n][i][CAT_PK]);
     if (ckdb[n][i][CAT_OWN])    sa = atoi(ckdb[n][i][CAT_OWN]);
     if (ckdb[n][i][CAT_GREC])   sh = atoi(ckdb[n][i][CAT_GREC]);
-    if (ckdb[n][i][CAT_RED])   scr = atoi(ckdb[n][i][CAT_RED]);
+    if (ckdb[n][i][CAT_YELLOW]) scg = atoi(ckdb[n][i][CAT_YELLOW]);
+    if (ckdb[n][i][CAT_RED])    scr = atoi(ckdb[n][i][CAT_RED]);
 
       pmeci[p] += sm;
       ptit[p]  += st;
@@ -1294,6 +1315,7 @@ void CupStats(int year, int t) {
       ppen[p]  += sp;
       pown[p]  += sa;
       prec[p]  += sh;
+      pyel[p]  += scg;
       pred[p]  += scr;
 
     if (sm>0) {
@@ -1309,7 +1331,7 @@ void CupStats(int year, int t) {
 void EuroStats(int year, int t) {
   int sm, st, sr, sg, xt;
   int sn, sp, sa, sh;
-  int scr;
+  int scg, scr;
   int n = year - EFY;
   int i = 0;
 
@@ -1330,7 +1352,7 @@ void EuroStats(int year, int t) {
 
     sm = st = sr = sg = 0;
     sn = sp = sa = sh = 0;
-    scr = 0;
+    scg = scr = 0;
     if (cedb[n][i][CAT_CAPS])   sm = atoi(cedb[n][i][CAT_CAPS]);
     if (cedb[n][i][CAT_START])  st = atoi(cedb[n][i][CAT_START]);
     if (cedb[n][i][CAT_SUB])    sr = atoi(cedb[n][i][CAT_SUB]);
@@ -1339,7 +1361,8 @@ void EuroStats(int year, int t) {
     if (cedb[n][i][CAT_PK])     sp = atoi(cedb[n][i][CAT_PK]);
     if (cedb[n][i][CAT_OWN])    sa = atoi(cedb[n][i][CAT_OWN]);
     if (cedb[n][i][CAT_GREC])   sh = atoi(cedb[n][i][CAT_GREC]);
-    if (cedb[n][i][CAT_RED])   scr = atoi(cedb[n][i][CAT_RED]);
+    if (cedb[n][i][CAT_YELLOW]) scg = atoi(cedb[n][i][CAT_YELLOW]);
+    if (cedb[n][i][CAT_RED])    scr = atoi(cedb[n][i][CAT_RED]);
 
       pmeci[p] += sm;
       ptit[p]  += st;
@@ -1349,6 +1372,7 @@ void EuroStats(int year, int t) {
       ppen[p]  += sp;
       pown[p]  += sa;
       prec[p]  += sh;
+      pyel[p]  += scg;
       pred[p]  += scr;
 
     if (sm>0) {
@@ -1365,7 +1389,7 @@ void EuroStats(int year, int t) {
 void NatStats(int year, int t) {
   int sm, st, sr, sg, xt;
   int sn, sp, sa, sh;
-  int scr;
+  int scg, scr;
   int n = year - NFY;
   int i = 0;
 
@@ -1387,7 +1411,8 @@ void NatStats(int year, int t) {
     if (cndb[n][i][CAT_PK])     sp = atoi(cndb[n][i][CAT_PK]);
     if (cndb[n][i][CAT_OWN])    sa = atoi(cndb[n][i][CAT_OWN]);
     if (cndb[n][i][CAT_GREC])   sh = atoi(cndb[n][i][CAT_GREC]);
-    if (cndb[n][i][CAT_RED])   scr = atoi(cndb[n][i][CAT_RED]);
+    if (cndb[n][i][CAT_YELLOW]) scg = atoi(cndb[n][i][CAT_YELLOW]);
+    if (cndb[n][i][CAT_RED])    scr = atoi(cndb[n][i][CAT_RED]);
 
       pmeci[p] += sm;
       ptit[p]  += st;
@@ -1397,6 +1422,7 @@ void NatStats(int year, int t) {
       ppen[p]  += sp;
       pown[p]  += sa;
       prec[p]  += sh;
+      pyel[p]  += scg;
       pred[p]  += scr;
 
     if (year!=pfy[p] && year!=ply[p]) psez[p]++;
@@ -1456,6 +1482,7 @@ void Lineups(int year) {
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_PK]);
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_OWN]);
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_GREC]);
+    fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_YELLOW]);
     fprintf(of, "<TD ALIGN=\"center\">%s</TD>", ccdb[n][i][CAT_RED]);
     fprintf(of, "</TR>\n");
 
@@ -1554,9 +1581,10 @@ void HTMLTeamRankingTable(Ranking *tr) {
   fprintf(of, "<TH WIDTH=\"5%%\">Victorii</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Egaluri</TH>");
   fprintf(of, "<TH WIDTH=\"5%%\">Înfr.</TH>");
-  fprintf(of, "<TH WIDTH=\"15%%\" COLSPAN=\"3\">Golaveraj</TH>");
-//  fprintf(of, "<TH WIDTH=\"1%%\"></TH>");
-//  fprintf(of, "<TH WIDTH=\"4%%\">Gol-</TH>");
+//  fprintf(of, "<TH WIDTH=\"15%%\" COLSPAN=\"3\">Golaveraj</TH>");
+  fprintf(of, "<TH WIDTH=\"7%%\">gm</TH>");
+  fprintf(of, "<TH WIDTH=\"1%%\"></TH>");
+  fprintf(of, "<TH WIDTH=\"7%%\">gp</TH>");
   fprintf(of, "<TH WIDTH=\"10%%\">Puncte</TH>");
   fprintf(of, "<TH WIDTH=\"10%%\">Procentaj%%</TH>");
   fprintf(of, "</TR></THEAD>\n");
@@ -1579,7 +1607,7 @@ void HTMLTeamRankingTable(Ranking *tr) {
       fprintf(of, "<TD>-</TD>");
       fprintf(of, "<TD ALIGN=\"left\">%d</TD>", s.gre);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", 2*s.win+s.drw);
-      fprintf(of, "<TD ALIGN=\"right\">[%d%%]</TD>", (int)(100*s.pct()));
+      fprintf(of, "<TD ALIGN=\"right\">%d%%</TD>", (int)(100*s.pct()));
       fprintf(of, "</TR>\n");
     }
   }
@@ -1593,7 +1621,7 @@ void PlayerStats(int pl) {
   int tem, ten, tet, ter, teg;
   int tnm, tnn, tnt, tnr, tng;
   int n, nrow, lasty;
-  char ssn[32];
+  char ssn[32], sdob[32];
   char wsm[12];
 
   R->reset();
@@ -1616,9 +1644,11 @@ void PlayerStats(int pl) {
   fprintf(of, "<script src=\"../sorttable.js\"></script>\n");
   fprintf(of, "<TABLE CELLSPACING=\"10\" CELLPADDING=\"5\">\n<TR>\n<TD>");
   fprintf(of, "<H3><IMG SRC=\"../../../thumbs/22/3/%s.png\"></IMG> %s %s</H3>\n", pcty[pl], ppren[pl], pname[pl]);
-  fprintf(of, "<UL><LI>Data naºterii: %s </LI>\n", pdob[pl]);
+  strcpy(sdob, pdob[pl]);
+  CanonicDOB(sdob, DOB_FULL);
+  fprintf(of, "<UL><LI>Data naºterii: %s </LI>\n", sdob);
   fprintf(of, "<LI>Locul naºterii: %s\n", ppob[pl]);
-  if (pjud[pl]!=NULL && pjud[pl][0]!=0) {
+  if (pjud[pl]!=NULL && pjud[pl][0]!=0 && pjud[pl][0]!=' ') {
       fprintf(of, " (%s)", pjud[pl]);
   }
   fprintf(of, "</LI>\n");
@@ -1641,12 +1671,15 @@ void PlayerStats(int pl) {
 			char sdate[32];
 			strcpy(sdate, lcdb[debc][debnum][DB_DATE]);
 			strtok(sdate, "@");
+            CanonicDOB(sdate, DOB_FULL);
 			int hid = atoi(lcdb[debc][debnum][DB_HOME]);
 			int aid = atoi(lcdb[debc][debnum][DB_AWAY]);
 			int scr = atoi(lcdb[debc][debnum][DB_SCORE]);
 			int zi  = CompactDate(lcdb[debc][debnum][DB_DATE]);
-		  fprintf(of, "<LI>Debut în prima divizie  #%d<BR>data: %s<BR>meciul: <A HREF=\"../reports/%d/%d-%d.-%d.html\">%s-%s %d-%d</A></LI>\n",
-				debord[pl]+1, sdate, debyear, hid, aid, zi, NickOf(L, hid, debyear), NickOf(L, aid, debyear), scr/100, scr%100);
+		  fprintf(of, "<LI>Debut în prima divizie  #%d", debord[pl]+1);
+          fprintf(of, "<UL><LI>data: %s</LI>", sdate);
+          fprintf(of, "<LI>meciul: <A HREF=\"../reports/%d/%d-%d-%d.html\">%s-%s %d-%d</A></LI></UL>\n",
+				debyear, hid, aid, zi, NickOf(L, hid, debyear), NickOf(L, aid, debyear), scr/100, scr%100);
 		}
 	}
   fprintf(of, "</UL>\n");
@@ -1713,6 +1746,8 @@ void PlayerStats(int pl) {
           SeasonName(yy, ssnyy);
           sezid[nrow] = year;
           strcpy(pdb[nrow][PTD_SEZON], ssnyy);
+//          if (nrow>0 && strcmp(pdb[nrow-1][PTD_HIDN], ssnyy)==0) strcpy(pdb[nrow][PTD_SEZON], " ");
+//          else strcpy(pdb[nrow][PTD_SEZON], ssnyy);
           strcpy(pdb[nrow][PTD_ECHIPA], " ");
           strcpy(pdb[nrow][PTD_POST], " ");
           strcpy(pdb[nrow][PTD_DIVM], " ");
@@ -1806,6 +1841,7 @@ void PlayerStats(int pl) {
 
       if (krow>=0 && krow<=nrow && em>0) {
         if (krow==nrow) {
+//          strcpy(pdb[krow][PTD_HIDN], ssn);
           strcpy(pdb[krow][PTD_SEZON], ssn);
           strcpy(pdb[krow][PTD_ECHIPA], NickOf(L, xt, year));
           for (int j=PTD_POST; j<NUM_PTD; j++) strcpy(pdb[krow][j], " ");
@@ -1879,8 +1915,8 @@ void PlayerStats(int pl) {
         sezid[erow] = year;
         echid[erow] = xt;
         strcpy(pdb[erow][PTD_SEZON], ssn);
-        strcpy(pdb[erow][PTD_ECHIPA], NickOf(L, xt, year));
-        for (int j=PTD_POST; j<NUM_PTD; j++) strcpy(pdb[erow][j], " ");
+//        strcpy(pdb[erow][PTD_ECHIPA], NickOf(L, xt, year));
+//        for (int j=PTD_POST; j<NUM_PTD; j++) strcpy(pdb[erow][j], " ");
         nrow++;
       }
       if (pdb[erow][PTD_ECHIPA][0]==' ')
@@ -1921,6 +1957,10 @@ void PlayerStats(int pl) {
 
 	/* Tabela pentru jucator la club */
   char bgc[12], rbgc[12];
+  //RemoveDuplicateSsn();
+//  for (int i=1; i<nrow; i++) {
+//    if (sezid[i] == sezid[i-1]) strcpy(pdb[i][PTD_SEZON], " ");
+//  }
   for (int i=0; i<nrow; i++) {
       fprintf(of, "<TR");
       strcpy(bgc, "FFFFFF"); strcpy(rbgc, "DDFFFF");
@@ -2284,6 +2324,7 @@ void HTMLTable(int t) {
   fprintf(of, "<TH>Pen</TH>");
   fprintf(of, "<TH>Auto</TH>");
   fprintf(of, "<TH>Gol/-</TH>");
+  fprintf(of, "<TH>Cg</TH>");
   fprintf(of, "<TH>Elim</TH>");
   fprintf(of, "</TR></THEAD>\n");
 
@@ -2312,6 +2353,7 @@ void HTMLTable(int t) {
 	fprintf(of, "<TD align=\"right\">%d</TD>", ppen[x]);
  	fprintf(of, "<TD align=\"right\">%d</TD>", pown[x]);
  	fprintf(of, "<TD align=\"right\">%d</TD>", prec[x]);
+ 	fprintf(of, "<TD align=\"right\">%d</TD>", pyel[x]);
  	fprintf(of, "<TD align=\"right\">%d</TD>", pred[x]);
     fprintf(of, "</TR>\n");
   }
@@ -2330,7 +2372,7 @@ void HTMLAlltimeTeamStats(int t, int pl) {
     }
     Sort(cr);
 
-    fprintf(stderr, "Alltime team stats for %s.\n", NameOf(L, t, 3000));
+    fprintf(stderr, "   Alltime %s.\n", NameOf(L, t, 3000));
     sprintf(ofilename, "html/lot-%d.html", t);
     of = fopen(ofilename, "wt");
     if (of==NULL) {
@@ -2347,11 +2389,11 @@ void HTMLAlltimeTeamStats(int t, int pl) {
 int main(int argc, char **argv) {
   current = 0;
   verbosity = 2;
-  CFY  = 1933; CLY = 2016;
-  KFY  = 1934; KLY = 2016;
-  EFY  = 1957; ELY = 2016;
-  NFY  = 1922; NLY = 2016;
-  FY   = 1922; LY  = 2016;
+  CFY  = 1933; CLY = 2017;
+  KFY  = 1934; KLY = 2017;
+  EFY  = 1957; ELY = 2017;
+  NFY  = 1922; NLY = 2017;
+  FY   = 1922; LY  = 2017;
   tm = -1;
   pl = -1;
   cr = CR_M;
@@ -2433,8 +2475,8 @@ int main(int argc, char **argv) {
 
   pdb = new char**[MAX_PSZ];
   for (int s=0; s<MAX_PSZ; s++) {
-    pdb[s] = new char*[NUM_PTD];
-    for (int j=0; j<NUM_PTD; j++) pdb[s][j] = new char[MAX_PTDLEN];
+    pdb[s] = new char*[NUM_PTD+1];
+    for (int j=0; j<=NUM_PTD; j++) pdb[s][j] = new char[MAX_PTDLEN];
   }
 
   for (year=FY; year<=LY; year++) {
