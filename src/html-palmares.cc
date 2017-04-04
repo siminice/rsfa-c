@@ -672,8 +672,7 @@ void Palmares(int a) {
   fprintf(of, "</TABLE><BR>\n\n");
 
 
-//  fprintf(of, "<TABLE  WIDTH=\"99%%\" BORDER=\"1\" CELLPADDING=\"1\" RULES=\"groups\" FRAME=\"box\">\n");
-  fprintf(of, "<TABLE  WIDTH=\"99%%\" CELLPADDING=\"1\" FRAME=\"box\">\n");
+  fprintf(of, "<TABLE  WIDTH=\"99%%\" BORDER=\"1\" CELLPADDING=\"1\" RULES=\"groups\" FRAME=\"box\">\n");
   fprintf(of, "<COLGROUP><COL SPAN=\"2\"></COLGROUP>\n");
   fprintf(of, "<COLGROUP><COL SPAN=\"10\"></COLGROUP>\n");
   fprintf(of, "<COLGROUP><COL SPAN=\"10\"></COLGROUP>\n");
@@ -692,14 +691,16 @@ void Palmares(int a) {
   fprintf(of, "<TD ALIGN=\"right\"></TD>");
   fprintf(of, "<TD ALIGN=\"left\"></TD>");
   for (int k=0; k<4; k++) {
-    fprintf(of, "<TD BGCOLOR=\"444444\"></TD>");
-    fprintf(of, "<TD ALIGN=\"right\">J</TD>");
-    fprintf(of, "<TD ALIGN=\"right\">V</TD>");
-    fprintf(of, "<TD ALIGN=\"right\">E</TD>");
-    fprintf(of, "<TD ALIGN=\"right\">Î</TD>");
-    fprintf(of, "<TD COLSPAN=\"3\" ALIGN=\"center\">ga</TD>");
-    fprintf(of, "<TD ALIGN=\"right\">P</TD>");
-    fprintf(of, "<TD ALIGN=\"right\">%%</TD>");
+  fprintf(of, "<TD ALIGN=\"right\"></TD>");
+  fprintf(of, "<TD ALIGN=\"right\">J</TD>");
+  fprintf(of, "<TD ALIGN=\"right\">V</TD>");
+  fprintf(of, "<TD ALIGN=\"right\">E</TD>");
+  fprintf(of, "<TD ALIGN=\"right\">Î</TD>");
+  fprintf(of, "<TD ALIGN=\"right\">gm</TD>");
+  fprintf(of, "<TD ALIGN=\"center\">-</TD>");
+  fprintf(of, "<TD ALIGN=\"right\">gp</TD>");
+  fprintf(of, "<TD ALIGN=\"right\">P</TD>");
+  fprintf(of, "<TD ALIGN=\"right\">%%</TD>");
   }
   fprintf(of, "</TR>\n");
   fprintf(of, "</TBODY>\n");
@@ -719,33 +720,30 @@ void Palmares(int a) {
       fprintf(of, "<TD ALIGN=\"right\">%d.</TD>", i);
       if (a!=k) fprintf(of, "<TD ALIGN=\"left\"><A HREF=\"vs-%04d/vs-%d-%d.html\">%s</A></TD>", a, a, k, NameOf(L, k, 3000));
       else fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NameOf(L, a, 3000));
-      fprintf(of, "<TD BGCOLOR=\"444444\"></TD>");
+      fprintf(of, "<TD></TD>");
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ngk);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", wink);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", drwk);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", losk);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", gsck);
       fprintf(of, "<TD ALIGN=\"center\">-</TD>");
-      fprintf(of, "<TD ALIGN=\"left\">%d</TD>", grek);
+      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", grek);
       fprintf(of, "<TD ALIGN=\"right\">%d</TD>", 2*wink+drwk);
       fprintf(of, "<TD ALIGN=\"right\">[%3d]</TD>", (int) ((100.0*wink+50*drwk) / (ngk)));
       for (int j=0; j<3; j++) {
         if (ng[j]>0) {
-          fprintf(of, "<TD BGCOLOR=\"444444\"></TD>");
+          fprintf(of, "<TD></TD>");
           fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ng[j]);
           fprintf(of, "<TD ALIGN=\"right\">%d</TD>", awin[j][k]);
           fprintf(of, "<TD ALIGN=\"right\">%d</TD>", adrw[j][k]);
           fprintf(of, "<TD ALIGN=\"right\">%d</TD>", alos[j][k]);
           fprintf(of, "<TD ALIGN=\"right\">%d</TD>", agsc[j][k]);
           fprintf(of, "<TD ALIGN=\"center\">-</TD>");
-          fprintf(of, "<TD ALIGN=\"left\">%d</TD>", agre[j][k]);
+          fprintf(of, "<TD ALIGN=\"right\">%d</TD>", agre[j][k]);
           fprintf(of, "<TD ALIGN=\"right\">%d</TD>", 2*awin[j][k]+adrw[j][k]);
           fprintf(of, "<TD ALIGN=\"right\">[%3d]</TD>", (int) ((100.0*awin[j][k]+50*adrw[j][k]) / (ng[j])));
         }
-        else {
-          fprintf(of, "<TD BGCOLOR=\"444444\"></TD>");
-          for (int h=0; h<9; h++) fprintf(of, "<TD></TD>");
-        }
+        else for (int h=0; h<10; h++) fprintf(of, "<TD></TD>");
       }
     fprintf(of, "</TR></TBODY>\n");
     }

@@ -463,11 +463,11 @@ void Cup(int y) {
   fprintf(of, "<HEAD>\n<link href=\"css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(of, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
   fprintf(of, "</HEAD>\n<BODY BGCOLOR=\"333333\">\n");
-	fprintf(of, "<H3>");
-  fprintf(of, "<A HREF=\"cupa-%d.html\"><IMG HEIGHT=\"24\" SRC=\"prev.gif\"></IMG></A>", y-1);
+	fprintf(of, "<H2>");
+  fprintf(of, "<A HREF=\"cupa-%d.html\"><IMG HEIGHT=\"32\" SRC=\"prev.gif\"></IMG></A>", y-1);
 	fprintf(of, "<FONT COLOR=\"EEEEEE\"> %s %s </FONT>", cpname, strsez);
-  fprintf(of, "<A HREF=\"cupa-%d.html\"><IMG HEIGHT=\"24\" SRC=\"next.gif\"></IMG></A>", y+1);
-	fprintf(of, "</H3>\n");
+  fprintf(of, "<A HREF=\"cupa-%d.html\"><IMG HEIGHT=\"32\" SRC=\"next.gif\"></IMG></A>", y+1);
+	fprintf(of, "</H2>\n");
 
   last_r = -1;
   for (int m=0; m<NM; m++) {
@@ -494,8 +494,7 @@ void Cup(int y) {
 			char srepl[12];
 			for (int ri=2; ri<=nreplay; ri++) srepl[ri-2]='r';
 			srepl[nreplay-1] = 0;
-      int zi = 50*((m_month-1)%12+1) + m_day;
-      fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/c%d-%d-%d.html\">", m_year, m_home, m_guest, zi);
+      fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/c%d-%d%s.html\">", m_year, m_home, m_guest, srepl);
       if (m_score[0]>=0 && m_score[1]>=0) fprintf(of, "%d-%d", m_score[0], m_score[1]);
       if ((m_score[0]+m_score[1]>0) && m_score[2]>=0 && m_score[3]>=0) {
         fprintf(of, " (%d-%d", m_score[2], m_score[3]);
@@ -523,7 +522,7 @@ void Cup(int y) {
   }
   if (last_r>0) TableFooter();
 
-  fprintf(of, "<HR><A HREF=\"index.html\"><IMG WIDTH=\"50\" WEIGHT=\"50\" SRC=\"home.gif\"></A></BODY>\n</HTML>");
+  fprintf(of, "</BODY>\n</HTML>");
   fclose(of);
 
 }

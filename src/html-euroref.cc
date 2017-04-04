@@ -46,20 +46,6 @@ Ranking *RC;
 int qord[DB_ROWS], qd[DB_ROWS];
 int ord[MAX_SEASONS][DB_ROWS];
 
-//---------------------------
-char *hexlink = new char[32];
-void makeHexlink(char *str) {
-  sprintf(hexlink, "%x%x%x%x%x%x",
-    ((unsigned char)str[0]),
-    ((unsigned char)str[1]),
-    ((unsigned char)str[2]),
-    ((unsigned char)str[3]),
-    ((unsigned char)str[4]),
-    ((unsigned char)str[5]));
-  hexlink[12]=0;
-}
-//---------------------------
-
 int FY, LY;
 char **ctty;
 char **dir;
@@ -489,9 +475,8 @@ void HTMLTable(Ranking *R, Catalog *C, const char *filename) {
     	fprintf(of, ">");
 			fprintf(of, "<TD>%d</TD>", i+1);
 			fprintf(of, "<TD>%s</TD>", p.pren);
-        makeHexlink(p.mnem);
-	   	fprintf(of, "<TD ALIGN=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"euroarbitri/%s.html\">%s</A></TD>",
-       p.name, p.pren, hexlink, p.name);
+	   	fprintf(of, "<TD ALIGN=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"euroarbitri/%03d/%03d.html\">%s</A></TD>",
+       p.name, p.pren, co/1000, co%1000, p.name);
 //			fprintf(of, "<TD ALIGN=\"right\">%s</TD>", p.dob);
 			fprintf(of, "<TD>%s<IMG SRC=\"../../thumbs/22/3/%s.png\"></IMG></TD>", p.cty, p.cty);
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ns[co]);
@@ -594,21 +579,20 @@ void HTMLCTable(Ranking *R, const char *filename) {
 
 void HTMLRef(int c) {
 	char filename[256];
-	Person p = Ref->P[c];
-    makeHexlink(p.mnem);
-	sprintf(filename, "html/euroarbitri/%s.html", hexlink);
+	sprintf(filename, "html/euroarbitri/%03d/%03d.html", c/1000, c%1000);
 	FILE *of = fopen(filename, "wt");
 	if (!of) { perror(filename); return; }
 
+	Person p = Ref->P[c];
 
 	fprintf(stderr, "%d.%s %s\n", c+1, p.pren, p.name);
   fprintf(of, "<HTML>\n<TITLE>%s %s</TITLE>\n", p.pren, p.name);
-  fprintf(of, "<HEAD>\n<link href=\"../css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
+  fprintf(of, "<HEAD>\n<link href=\"../../css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(of, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
   fprintf(of, "</HEAD>\n<BODY>\n");
 
   fprintf(of, "<TABLE CELLSPACING=\"10\" CELLPADDING=\"5\">\n<TR>\n<TD>");
-  fprintf(of, "<H3>Arbitru <IMG SRC=\"../../../thumbs/22/3/%s.png\"></IMG> %s %s</H3>\n", p.cty, p.pren, p.name);
+  fprintf(of, "<H3>Arbitru <IMG SRC=\"../../../../thumbs/22/3/%s.png\"></IMG> %s %s</H3>\n", p.cty, p.pren, p.name);
 //  fprintf(of, "<UL><LI>Data naºterii: %s </LI>\n", p.dob);
 //  fprintf(of, "<LI>Locul naºterii: %s\n", p.pob);
 //  if (p.jud!=NULL && p.jud[0]!=0) { fprintf(of, " (%s)", p.jud); }
@@ -642,7 +626,6 @@ void HTMLRef(int c) {
     int hid = atoi(db[y][k][DB_HOME]);
     int aid = atoi(db[y][k][DB_AWAY]);
     int scr = atoi(db[y][k][DB_SCORE]);
-    int zi  = CompactDate(db[y][k][DB_DATE]);
 		int x1 = scr/100;
 		int x2 = scr%100;
 		if (hid<EURO) {
@@ -655,8 +638,8 @@ void HTMLRef(int c) {
 		}
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", db[y][k][DB_DATE]);
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NameOf(L, hid, year));
-    fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d-%d.html\">%d-%d</A></TD>",
-        fxcol[wxl], year, hid, aid, zi, scr/100, scr%100);
+    fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../../reports/%d/e%d-%d.html\">%d-%d</A></TD>",
+        fxcol[wxl], year, hid, aid, scr/100, scr%100);
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NameOf(L, aid, year));
 		EcupMnem(db[y][k][DB_COMP], year);
 		RoundName(db[y][k][DB_ROUND]);
@@ -671,15 +654,9 @@ void HTMLRef(int c) {
 	fclose(of);
 }
 
-int main(int argc, char **argv) {
+int main() {
   FY = 1957;
-  LY = 2016;
-  for (int k=1; k<argc; k++) {
-    if (strcmp(argv[k], "-ly")==0 && k<argc-1)  {
-      LY = atoi(argv[++k]);
-    }
-  }
-
+  LY = 2014;
 	Load();
 
 	Ref = new Catalog();

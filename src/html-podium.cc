@@ -224,7 +224,7 @@ void Load() {
   }
 
 // quick data
-  f = fopen("part.a", "rt");
+  f = fopen("part.med", "rt");
   y = 0;
   while (!feof(f)) {
 //  for (int y=0; y<=2*((LYA+count_last-1)-FYA); y++) {

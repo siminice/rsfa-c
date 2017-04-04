@@ -56,12 +56,12 @@ int Detect() {
   int k = 0;
   while (!feof(stdin) && k<n) {
     fgets(s, 200, stdin);
-    tok[0] = strtok(s, "\t");
+    tok[0] = strtok(s, "\t\n");
     for (int j=1; j<10; j++) tok[j] = strtok(NULL, "\t");
 
     int i = -1;
     if (tkn>=0 && tkn<10) {
-      i = Find(tok[tkn]);
+      i = Find(tok[0]);
     }
 
     if (i>=0) {

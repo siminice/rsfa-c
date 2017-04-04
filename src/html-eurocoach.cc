@@ -57,20 +57,6 @@ int ns[MAX_NAMES], fs[MAX_NAMES], ls[MAX_NAMES];
 int ens[MAX_NAMES], efs[MAX_NAMES], els[MAX_NAMES];
 int ngm[MAX_SEASONS];
 
-//---------------------------
-char *hexlink = new char[32];
-void makeHexlink(char *str) {
-  sprintf(hexlink, "%x%x%x%x%x%x",
-    ((unsigned char)str[0]),
-    ((unsigned char)str[1]),
-    ((unsigned char)str[2]),
-    ((unsigned char)str[3]),
-    ((unsigned char)str[4]),
-    ((unsigned char)str[5]));
-  hexlink[12]=0;
-}
-//---------------------------
-
 char *EuroName(int t, int nick, int year) {
   int ct = t/EURO;
   int cl = t%EURO;
@@ -418,7 +404,6 @@ void HTMLTable(Ranking *R, Catalog *C, const char *filename, int eur) {
 		int co = R->rank[i];
 		int ng = R->S[co].numg();
 		Person p = C->P[co];
-        makeHexlink(p.mnem);
 		Stat   s = R->S[co];
 		if (ng > 0) {
     	fprintf(of, "\n<TR");
@@ -427,12 +412,12 @@ void HTMLTable(Ranking *R, Catalog *C, const char *filename, int eur) {
 			fprintf(of, "<TD>%d</TD>", i+1);
 			fprintf(of, "<TD>%s</TD>", p.pren);
 			if (eur) {
-  	    	  fprintf(of, "<TD ALIGN=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"euroantrenori/%s.html\">%s</A></TD>",
-                p.name, p.pren, hexlink, p.name);
+	    	fprintf(of, "<TD ALIGN=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"euroantrenori/%03d/%03d.html\">%s</A></TD>",
+        p.name, p.pren, co/1000, co%1000, p.name);
 			}
 			else {
-	    	  fprintf(of, "<TD ALIGN=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"antrenori/%s.html\">%s</A></TD>",
-                p.name, p.pren, hexlink, p.name);
+	    	fprintf(of, "<TD ALIGN=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"antrenori/%03d/%03d.html\">%s</A></TD>",
+        p.name, p.pren, co/1000, co%1000, p.name);
 			}
 //			fprintf(of, "<TD ALIGN=\"right\">%s</TD>", p.dob);
 			fprintf(of, "<TD>%s<IMG SRC=\"../../thumbs/22/3/%s.png\"></IMG></TD>", p.cty, p.cty);
@@ -466,20 +451,20 @@ void HTMLTable(Ranking *R, Catalog *C, const char *filename, int eur) {
 
 void HTMLEuroCoach(int c) {
 	char filename[256];
-	Person p = EAnt->P[c];
-    makeHexlink(p.mnem);
-	sprintf(filename, "html/euroantrenori/%s.html", hexlink);
+	sprintf(filename, "html/euroantrenori/%03d/%03d.html", c/1000, c%1000);
 	FILE *of = fopen(filename, "wt");
 	if (!of) { perror(filename); return; }
 
+	Person p = EAnt->P[c];
+
   fprintf(stderr, "%d.%s %s\n", c+1, p.pren, p.name);
   fprintf(of, "<HTML>\n<TITLE>%s %s</TITLE>\n", p.pren, p.name);
-  fprintf(of, "<HEAD>\n<link href=\"../css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
+  fprintf(of, "<HEAD>\n<link href=\"../../css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(of, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
   fprintf(of, "</HEAD>\n<BODY>\n");
 
   fprintf(of, "<TABLE CELLSPACING=\"10\" CELLPADDING=\"5\">\n<TR>\n<TD>");
-  fprintf(of, "<H3>Antrenor <IMG SRC=\"../../../thumbs/22/3/%s.png\"></IMG> %s %s</H3>\n", p.cty, p.pren, p.name);
+  fprintf(of, "<H3>Antrenor <IMG SRC=\"../../../../thumbs/22/3/%s.png\"></IMG> %s %s</H3>\n", p.cty, p.pren, p.name);
 //  fprintf(of, "<UL><LI>Data naºterii: %s </LI>\n", p.dob);
 //  fprintf(of, "<LI>Locul naºterii: %s\n", p.pob);
 //  if (p.jud!=NULL && p.jud[0]!=0) { fprintf(of, " (%s)", p.jud); }
@@ -512,7 +497,6 @@ void HTMLEuroCoach(int c) {
     int hid = atoi(db[y][k][DB_HOME]);
     int aid = atoi(db[y][k][DB_AWAY]);
     int scr = atoi(db[y][k][DB_SCORE]);
-    int zi  = CompactDate(db[y][k][DB_DATE]);
     int x1 = scr/100;
     int x2 = scr%100;
     if (hid<EURO) {
@@ -525,8 +509,8 @@ void HTMLEuroCoach(int c) {
     }
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", db[y][k][DB_DATE]);
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NameOf(L, hid, year));
-    fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d-%d.html\">%d-%d</A></TD>",
-        fxcol[wxl], year, hid, aid, zi, scr/100, scr%100);
+    fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../../reports/%d/e%d-%d.html\">%d-%d</A></TD>",
+        fxcol[wxl], year, hid, aid, scr/100, scr%100);
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NameOf(L, aid, year));
     EcupMnem(db[y][k][DB_COMP], year);
     RoundName(db[y][k][DB_ROUND]);
@@ -541,15 +525,9 @@ void HTMLEuroCoach(int c) {
   fclose(of);
 }
 
-int main(int argc, char **argv) {
+int main() {
   FY = 1957;
-  LY = 2016;
-  for (int k=1; k<argc; k++) {
-    if (strcmp(argv[k], "-ly")==0 && k<argc-1)  {
-      LY = atoi(argv[++k]);
-    }
-  }
-
+  LY = 2014;
 	Load();
 
 	Ant = new Catalog();

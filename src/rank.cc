@@ -703,7 +703,7 @@ int main(int argc, char* argv[]) {
         option = 1;
     }
     zi = _rnd % 1000;
-    printf("\n[1] Add result [2] Change round (%d, %s %d) [3] Date++ [4] Date-- [0] Exit\n", 
+    printf("\n[1] Add [2] Round (%2d, %3s %2d) [3] Date+ [4] Date- [0] Exit\n", 
             _rnd/1000, (_rnd==-1?"unknown":month[zi/50-1]), zi%50);
     scanf("%d", &option);
   }

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "catalog.hh"
 
 #define DEFAULT      0
 #define HEAD_TO_HEAD 1
@@ -23,7 +22,7 @@
 #define LOSS_BOTH_9	59
 
 #define MAX_NAMES       20000
-#define DB_ROWS         1024
+#define DB_ROWS         400
 #define DB_COLS         60
 #define DB_CELL         20
 #define EV_COLS         30
@@ -39,13 +38,6 @@
 #define MAX_GOALS	100
 #define MAX_EXEQUO	100
 
-#define BGCOLOR_PROMOTED      0
-#define BGCOLOR_PROMO_PLAYOFF 1
-#define BGCOLOR_RELEG_PLAYOFF 2
-#define BGCOLOR_RELEGATED     3
-#define BGCOLOR_NORMAL_ODD    4
-#define BGCOLOR_NORMAL_EVEN   5
-
 char edb[DB_ROWS][EV_COLS][DB_CELL];
 char **pmnem, **pname, **ppren, **pdob, **pcty, **ppob, **pjud;
 int  pgol[MAX_NAMES], ppen[MAX_NAMES], prnk[MAX_GOALS][MAX_EXEQUO], nrnk[MAX_GOALS];
@@ -54,11 +46,6 @@ const char *month[] = {"", "Ian", "Feb", "Mar", "Apr", "Mai", "Iun",
                      "Iul", "Aug", "Sep", "Oct", "Noi", "Dec"};
 const char *romonth[] = {"", "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
                      "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"};
-const char *fxcol[] = {"77FF77", "CCFFCC", "FF8888", "F0E0B0", "FFFFFF", "DDFFFF"};
-
-const char *rescol[] = {"000000", "006600", "CC9900", "990000"};
-const char *resbgcol[] = {"000000", "CCFFCC", "FFFFCC", "FFE7E7"};
-
 int borna[256];
 char **club;
 char **mnem;
@@ -69,20 +56,18 @@ int  rank[MAX_N];
 int  pos[MAX_N][365];
 char desc[MAX_N][32];
 
+int  lid[MAX_N], lwin[MAX_N], ldrw[MAX_N], llos[MAX_N], lgsc[MAX_N], lgre[MAX_N], lpts[MAX_N], lpen[MAX_N], lpdt[MAX_N];
+int  hwin[MAX_N], hdrw[MAX_N], hlos[MAX_N], hgsc[MAX_N], hgre[MAX_N], hpts[MAX_N];
+int  gwin[MAX_N], gdrw[MAX_N], glos[MAX_N], ggsc[MAX_N], ggre[MAX_N], gpts[MAX_N];
+int  prank[MAX_N], hrank[MAX_N], grank[MAX_N];
+int  tbwin[MAX_N], tbdrw[MAX_N], tblos[MAX_N], tbgsc[MAX_N], tbgre[MAX_N], tbrk[MAX_N];
+int  n, rr, r, lastr, lastrnd, tbr, pr1, pr2, rel1, rel2, ppv, year, numr;
 int  NG;
 bool winter;
 int num_winter;
 int *start_winter, *end_winter;
-int  fd, ld, fr, frd, lr, lrd, decorate, calendar, dates_unknown;
 
-int lid[MAX_N], lwin[MAX_N], ldrw[MAX_N], llos[MAX_N], lgsc[MAX_N], lgre[MAX_N], lpts[MAX_N], lpen[MAX_N], lpdt[MAX_N];
-int hwin[MAX_N], hdrw[MAX_N], hlos[MAX_N], hgsc[MAX_N], hgre[MAX_N], hpts[MAX_N];
-int gwin[MAX_N], gdrw[MAX_N], glos[MAX_N], ggsc[MAX_N], ggre[MAX_N], gpts[MAX_N];
-int prank[MAX_N], hrank[MAX_N], grank[MAX_N];
-int tbwin[MAX_N], tbdrw[MAX_N], tblos[MAX_N], tbgsc[MAX_N], tbgre[MAX_N], tbrk[MAX_N];
-int n, rr, r, lastr, lastrnd, tbr, pr1, pr2, rel1, rel2, ppv, year, numr;
-int split_after, split_top, split_points, cancel_gdiff, vs_top;
-
+int  fd, ld, fr, frd, lr, lrd, decorate, calendar;
 FILE *of;
 char dvz;
 int  seria;
@@ -90,22 +75,6 @@ char sf[128];
 int  played[650];
 int  sched[650][24];
 int  num_sched, first_d, first_r, last_d, last_r;
-
-Ranking *notIncl;
-
-//---------------------------
-char *hexlink = new char[32];
-void makeHexlink(int i) {
-  sprintf(hexlink, "%x%x%x%x%x%x",
-    ((unsigned char)pmnem[i][0]),
-    ((unsigned char)pmnem[i][1]),
-    ((unsigned char)pmnem[i][2]),
-    ((unsigned char)pmnem[i][3]),
-    ((unsigned char)pmnem[i][4]),
-    ((unsigned char)pmnem[i][5]));
-  hexlink[12]=0;
-}
-//---------------------------
 
 struct alias {
   int   year;
@@ -121,10 +90,10 @@ struct node {
   node(alias*, node*);
   ~node();
 };
-
+  
 struct Aliases {
   node *list;
-  Aliases();
+  Aliases();   
   ~Aliases();
   void Append(alias *a);
   char* GetName(int y);
@@ -134,7 +103,7 @@ struct Aliases {
 //------------------------------------
 
 alias::alias(int y, char *s, char *n) {
-  year = y;
+  year = y;  
   name = (char*) malloc(strlen(s)+1);
   strcpy(name, s);
   if (n != NULL) {
@@ -148,25 +117,25 @@ alias::~alias() {
   if (name) delete name;
   if (nick) delete nick;
 };
-
+  
 node::node(alias *a, node *n) {
   data = a;
   next = n;
 };
-
+  
 node::~node() {
   if (next) delete next;
   delete data;
 };
-
+  
 
 Aliases::Aliases() {
   list = NULL;
 };
-
+  
 Aliases::~Aliases() {
  delete list;
-}
+} 
 
 void Aliases::Append(alias *a) {
   node *n = (node*) malloc(sizeof(node));
@@ -174,7 +143,7 @@ void Aliases::Append(alias *a) {
   n->next = list;
   list = n;
 };
-
+  
 char* Aliases::GetName(int y) {
   if (!list) return NULL;
   node *n = list;
@@ -186,7 +155,7 @@ char* Aliases::GetName(int y) {
     x = n->data->year;
   }
   return s;
-}
+} 
 
 char* Aliases::GetNick(int y) {
   if (!list) return NULL;
@@ -199,7 +168,7 @@ char* Aliases::GetNick(int y) {
     x = n->data->year;
   }
   return s;
-}
+} 
 
 Aliases **L;
 
@@ -252,7 +221,7 @@ int Load() {
   for (int i=0; i<NC; i++) {
     if (feof(f)) continue;
     fgets(s, 2000, f);
-    if (!s) continue;
+    if (!s) continue; 
     if (strlen(s) < 3) continue;
     s[strlen(s)-1] = 0;
     tok[0] = strtok(s, "*");
@@ -264,7 +233,7 @@ int Load() {
       name = strtok(NULL, "~");
       nick = strtok(NULL, "@");
       int y = atoi(ystr);
-      alias *a = new alias(y, name, nick);
+      alias *a = new alias(y, name, nick); 
       L[i]->Append(a);
       k++;
     }
@@ -298,18 +267,14 @@ int after(int dt, int r) {
   else return (dt<r);
 }
 
-int sup(int r, int i, int j, int tbr=0) {
+int sup(int i, int j, int tbr=0) {
   int gm1 = win[i]+drw[i]+los[i];
   int gm2 = win[j]+drw[j]+los[j];
-  int p1 = pts[i];
-  int p2 = pts[j];
-  if (r <= split_after) {
-    p1 -= pen[i];
-    p2 -= pen[j];
-  }
+  int p1 = pts[i] - pen[i];
+  int p2 = pts[j] - pen[j];
   if (gm1==0 && p1==0 && gm2>0) return 0;
   if (gm2==0 && p2==0 && gm1>0) return 1;
-  if (tbr%NUMORD==HEAD_TO_HEAD) {
+  if (tbr%NUMORD==HEAD_TO_HEAD) {  
     int p1 = ppv*tbwin[i]+tbdrw[i];
     int p2 = ppv*tbwin[j]+tbdrw[j];
     if (p1 > p2) return 1;
@@ -320,25 +285,9 @@ int sup(int r, int i, int j, int tbr=0) {
     if (tbwin[i] < tbwin[j]) return 0;
     if (tbgsc[i] > tbgsc[j]) return 1;
     if (tbgsc[i] < tbgsc[j]) return 0;
-    if (tbwin[i] > tbwin[j]) return 1;
-    if (tbwin[i] < tbwin[j]) return 0;
-/*
-    int gs1 = 0;
-    int gs2 = 0;
-    int aw1 = 0;
-    int aw2 = 0;
-    for (int k=0; k<numr; k++) {
-      if (res[k][i][j] >=0) { gs1 += res[k][i][j]/100; gs2 += res[k][i][j]%100; aw2 += res[k][i][j]%100; }
-      if (res[k][j][i] >=0) { gs1 += res[k][j][i]%100; gs2 += res[k][j][i]/100; aw1 += res[k][j][i]%100; }
-    }
-    if (gs1 > gs2) return 1;
-    if (gs2 > gs1) return 0;
-    if (aw1 > aw2) return 1;
-    if (aw2 > aw1) return 0;
-*/
-    return sup(r, i, j, 0);
+    return sup(i, j, 0);
   }
-  else if (tbr%NUMORD==RATIO) {
+  else if (tbr%NUMORD==RATIO) {  
     int p1 = ppv*win[i]+drw[i];
     int p2 = ppv*win[j]+drw[j];
     if (p1 > p2) return 1;
@@ -358,21 +307,21 @@ int sup(int r, int i, int j, int tbr=0) {
   else {
     int p1 = pts[i];
     int p2 = pts[j];
-    if (r<=split_after && pen[i]!=0 && after(pdt[i],lastr)) p1 -= pen[i];
-    if (r<=split_after && pen[j]!=0 && after(pdt[j],lastr)) p2 -= pen[j];
+    if (pen[i]!=0 && after(pdt[i],lastr)) p1 -= pen[i];
+    if (pen[j]!=0 && after(pdt[j],lastr)) p2 -= pen[j];
     if (p1 > p2) return 1;
     if (p1 < p2) return 0;
     if (gsc[i] - gre[i] > gsc[j] - gre[j]) return 1;
     if (gsc[i] - gre[i] < gsc[j] - gre[j]) return 0;
     if (win[i] > win[j]) return 1;
     if (win[i] < win[j]) return 0;
-    if (gsc[i] > gsc[j]) return 1;
+    if (gsc[i] > gsc[j]) return 1;   
     if (gsc[i] < gsc[j]) return 0;
     if (i > j) return 0;
     return 1;
   }
 }
-
+  
 int hsup(int i, int j) {
   int p1 = hpts[i];
   int p2 = hpts[j];
@@ -382,7 +331,7 @@ int hsup(int i, int j) {
     if (hgsc[i] - hgre[i] < hgsc[j] - hgre[j]) return 0;
     if (hwin[i] > hwin[j]) return 1;
     if (hwin[i] < hwin[j]) return 0;
-    if (hgsc[i] > hgsc[j]) return 1;
+    if (hgsc[i] > hgsc[j]) return 1;   
     if (hgsc[i] < hgsc[j]) return 0;
     if (i > j) return 0;
     return 1;
@@ -397,13 +346,13 @@ int gsup(int i, int j) {
     if (ggsc[i] - ggre[i] < ggsc[j] - ggre[j]) return 0;
     if (gwin[i] > gwin[j]) return 1;
     if (gwin[i] < gwin[j]) return 0;
-    if (ggsc[i] > ggsc[j]) return 1;
+    if (ggsc[i] > ggsc[j]) return 1;   
     if (ggsc[i] < ggsc[j]) return 0;
     if (i > j) return 0;
     return 1;
 }
-
-void Tiebreak(int r, int k, int l) {
+  
+void Tiebreak(int k, int l) {
   for (int i=k; i<=l; i++) {
     int j = rank[i];
     tbwin[j] = tbdrw[j] = tblos[j] = tbgsc[j] = tbgre[j] = 0;
@@ -429,29 +378,27 @@ void Tiebreak(int r, int k, int l) {
     }
   }
 
-  int sorted;
+  int sorted; 
   do {
     sorted = 1;
-    for (int i=k; i<l; i++)
-      if (sup(r, tbrk[i+1], tbrk[i], (tbr%NUMORD!=RATIO ? gm>=(l-k+1)*(l-k) : RATIO))) {
-        if (!(r > split_after && i+1==split_top)) {
-          sorted = 0;
-          int aux = tbrk[i];
-          tbrk[i] = tbrk[i+1];
-          tbrk[i+1] = aux;
-        }
+    for (int i=k; i<k; i++)
+      if (sup(tbrk[i+1], tbrk[i], (tbr%NUMORD!=RATIO ? gm>=(l-k+1)*(l-k) : RATIO))) {  
+        sorted = 0;
+        int aux = tbrk[i];
+        tbrk[i] = tbrk[i+1];
+        tbrk[i+1] = aux;
       }
   } while (!sorted);
   for (int i=k; i<=l; i++)
     rank[i] = tbrk[i];
 }
+    
 
-
-void Standings(int r) {
+void Ranking() {
   // BubbleSort
   int i, j;
   for (i=0; i<n; i++) prank[rank[i]] = i;
-//  for (i=0; i<n; i++) rank[i] = i;
+  for (i=0; i<n; i++) rank[i] = i;
   int sorted;
   if (NG>0) {
     int nn = (n+NG-1)/NG;
@@ -459,7 +406,7 @@ void Standings(int r) {
       sorted = 1;
       for (int g=0; g<NG; g++) {
         for (i=0; i<(g==NG-1?n-g*nn-1:nn-1); i++) {
-          if (sup(r, rank[g*nn+i+1], rank[g*nn+i], (tbr%NUMORD!=RATIO? 0 : tbr))) {
+          if (sup(rank[g*nn+i+1], rank[g*nn+i], (tbr%NUMORD!=RATIO? 0 : tbr))) {
             sorted = 0;
             int aux = rank[g*nn+i];
             rank[g*nn+i] = rank[g*nn+i+1];
@@ -473,13 +420,11 @@ void Standings(int r) {
   do {
     sorted = 1;
     for (i=0; i<n-1; i++) {
-      if (sup(r, rank[i+1], rank[i], (tbr%NUMORD!=RATIO? 0 : tbr))) {
-        if (!(r>split_after && i+1==split_top)) {
-          sorted = 0;
-          int aux = rank[i];
-          rank[i] = rank[i+1];
-          rank[i+1] = aux;
-        }
+      if (sup(rank[i+1], rank[i], (tbr%NUMORD!=RATIO? 0 : tbr))) {
+        sorted = 0;
+        int aux = rank[i];
+        rank[i] = rank[i+1];
+        rank[i+1] = aux;
       }
     }
   } while (!sorted);
@@ -488,13 +433,13 @@ void Standings(int r) {
     while (i<n-1) {
       j = i;
       while (j+1<n && (pts[rank[j+1]]-pen[rank[j+1]] == pts[rank[i]]-pen[rank[i]])) j++;
-      if (j>i) Tiebreak(r, i,j);
+      if (j>i) Tiebreak(i,j);  
       i = j+1;
     }
   }
 }
 
-void HStandings() {
+void HRanking() {
   int i, j;
   for (i=0; i<n; i++) hrank[i] = i;
   int sorted;
@@ -511,7 +456,7 @@ void HStandings() {
   } while (!sorted);
 }
 
-void GStandings() {
+void GRanking() {
   int i, j;
   for (i=0; i<n; i++) grank[i] = i;
   int sorted;
@@ -572,7 +517,7 @@ void CollectSched(int calendar) {
         if (r>last_r) last_r = r;
         if (round[h][i][j] > 0) {
         if (calendar) {
-          if (sched[z][0]==0) num_sched++;
+          if (sched[z][0]==0) num_sched++;          
           if (sched[z][0]>=19) {
              fprintf(stderr, "ERROR: too many matches on %d.\n", z);
              return;
@@ -605,32 +550,6 @@ void CollectSched(int calendar) {
     while (first_d < 631 && played[first_d]==0) first_d++;
 }
 
-int FindOpponentAndResult(int t, int r, int &ha, int &opp, int &gf, int &ga) {
-  ha  = -1;
-  opp =  t;
-  gf  = -1;
-  ga  = -1;
-  for (int h=0; h<rr; h++) {
-    for (int j=0; j<n; j++) {
-      if (round[h][t][j]/1000 == r) {
-         ha = 1;
-         opp = j;
-         gf = allres[h][t][j]/100;
-         ga = allres[h][t][j]%100;
-         return h;
-      }
-      if (round[h][j][t]/1000 == r) {
-         ha = 2;
-         opp = j;
-         gf = allres[h][j][t]%100;
-         ga = allres[h][j][t]/100;
-         return h;
-      }
-    }
-  }
-  return -1;
-}
-
 int AddResult(int h, int a, int b) {
   res[h][a][b] = allres[h][a][b];
   if (res[h][a][b] < 0) return 0;
@@ -639,7 +558,7 @@ int AddResult(int h, int a, int b) {
   if (y>=SPECIAL) {
     if (y>=LOSS_BOTH_0 && y<=LOSS_BOTH_9) {
       int z = y%10;
-      gre[a] += z;
+      gre[a] += z; 
       gre[b] += z;
       los[a]++; los[b]++;
       hlos[a]++; glos[b]++;
@@ -650,49 +569,19 @@ int AddResult(int h, int a, int b) {
   hgsc[a] += x; hgre[a] += y;
   gsc[b]  += y; gre[b]  += x;
   ggsc[b] += y; ggre[b] += x;
-  if (x>y) {
-    win[a]++; los[b]++; pts[a] += ppv;
-    hwin[a]++; glos[b]++; hpts[a] += ppv;
+  if (x>y) { 
+    win[a]++; los[b]++; pts[a] += ppv; 
+    hwin[a]++; glos[b]++; hpts[a] += ppv; 
   }
-  else if (x==y) {
-    drw[a]++; drw[b]++; pts[a]++; pts[b]++;
-    hdrw[a]++; gdrw[b]++; hpts[a]++; gpts[b]++;
+  else if (x==y) { 
+    drw[a]++; drw[b]++; pts[a]++; pts[b]++; 
+    hdrw[a]++; gdrw[b]++; hpts[a]++; gpts[b]++; 
   }
-  else {
-    los[a]++; win[b]++; pts[b] += ppv;
-    hlos[a]++; gwin[b]++; gpts[b] += ppv;
+  else { 
+    los[a]++; win[b]++; pts[b] += ppv; 
+    hlos[a]++; gwin[b]++; gpts[b] += ppv; 
   }
   return 1;
-}
-
-void CalcPointsVsTop(){
-  for (int i=0; i<vs_top; i++) {
-    for (int j=vs_top; j<n; j++) {
-      int a = rank[i];
-      int b = rank[j];
-      for (int h=0; h<rr; h++) {
-        notIncl->S[a].addRes(res[h][a][b]/100, res[h][a][b]%100);
-        notIncl->S[a].addRes(res[h][b][a]%100, res[h][b][a]/100);
-      }
-    }
-  }
-}
-
-void AdjustStats() {
-  if (vs_top<n) {
-    CalcPointsVsTop();
-  }
-  for (int i=0; i<n; i++) {
-    if (split_points==1) {
-      pts[i] = (pts[i] - notIncl->S[i].pts(ppv) - pen[i]+1)/2;
-    } else if (split_points==2) {
-      pts[i] = 0;
-    }
-    if (cancel_gdiff>0) {
-      gsc[i] = gre[i] = 0;
-      win[i] = drw[i] = los[i] = 0;
-    }
-  }
 }
 
 int LoadFile(char *filename) {
@@ -710,7 +599,6 @@ int LoadFile(char *filename) {
   if (n%2==0) numr = rr*2*(n-1);
   else numr = rr*2*n;
 
-  dates_unknown = 1;
   /* clear all  data */
   for (int h=0; h<rr; h++) {
     for (int i=0; i<n; i++) {
@@ -721,8 +609,6 @@ int LoadFile(char *filename) {
       }
     }
   }
-
-  notIncl = new Ranking(n);
 
   for (i=0; i<n; i++) {
     rank[i] = hrank[i] = grank[i] = prank[i] = i;
@@ -747,7 +633,7 @@ int LoadFile(char *filename) {
        else strcpy(desc[i],"");
     }
     else strcpy(desc[i],"");
-
+    
   }
   lrd = lr = -1;
   fr = frd = 1000;
@@ -756,18 +642,15 @@ int LoadFile(char *filename) {
     for (j=0; j<n; j++) {
       fscanf(f, "%d %d", &r, &z);
       round[h][i][j] = r;
-      if (r > 0) dates_unknown = 0;
       allres[h][i][j] = z;
       res[h][i][j] = -1;
       int tr = round[h][i][j]/1000;
       int td = round[h][i][j]%1000;
-      // autocorrect multiple round robin ?
-/*
       if (h>0 && tr <= numr/rr) {
+        /* autocorrect multiple round robin */
         round[h][i][j] += 1000*h*(numr/rr);
         tr += 1000*h*(numr/rr);
       }
-*/
       if (round[h][i][j]>0 && tr == 0 && fr!=1 && td < frd) frd = td;
       if (tr == 1 && td < frd) {frd = td; fr = 1;}
       if (round[h][i][j]>0 && tr == 0 && td > lrd) lrd = td;
@@ -862,7 +745,7 @@ void LoadEvents() {
   sprintf(filename, "events-%d.db", year);
   f = fopen(filename, "rt");
   if (f==NULL) { fprintf(stderr, "ERROR: database %s not found.\n", filename); return; }
-  for (int i=0; i<rr*n*(n-1); i++) {
+  for (int i=0; i<n*(n-1); i++) {
     fgets(s, 5000, f);
     tk[0] = strtok(s, ",\n");
     for (int j=1; j<EV_COLS; j++) tk[j]=strtok(NULL, ",\n");
@@ -874,20 +757,20 @@ void LoadEvents() {
   fclose(f);
 }
 
-int FindMnem(char *mnem) {
+int FindMnem(char *mnem) {   
   int c = ((unsigned char)mnem[0]);
   for (int i=borna[c]; i<borna[c+1]; i++)
     if (strcmp(pmnem[i], mnem)==0) return i;
   return -1;
 }
 
-int MatchID(int r, int a, int b) {
-  int mid = r*n*(n-1) + a*(n-1)+b-(b>a?1:0);
+int MatchID(int a, int b) {
+  int mid = a*(n-1)+b-(b>a?1:0);
   return mid;
 }
 
 void GetEvents(int r, int a, int b) {
-  int mid = MatchID(r, a, b);
+  int mid = MatchID(a, b);
   int ep, et;
   char s[DB_CELL], *sp, *sm;
   for (int i=0; i<EV_COLS; i++) {
@@ -943,7 +826,7 @@ void HTMLHeader(int i) {
 
 void HTMLFooter() {
 	if (dvz=='A') {
-	  fprintf(of, "<A HREF=\"catalog-%d.html\"><IMG HEIGHT=\"50\" SRC=\"squad.png\"></IMG></A>\n", year);
+	  fprintf(of, "<UL><LI><A HREF=\"catalog-%d.html\">Loturi echipe</A></LI></UL>\n", year);
 	}
   fprintf(of, "</BODY>\n</HTML>");
   fclose(of);
@@ -979,7 +862,7 @@ void NavTable(int r) {
       int pr = r-1;
       while (pr>0 && played[pr]==0) pr--;
       if (pr==0) {
-        pr = 649;
+        pr = 649; 
         while (pr>0 && played[pr]==0) pr--;
       }
       int nr = r+1;
@@ -1030,10 +913,6 @@ void NavTable(int r) {
     }
   }
   fprintf(of, "</TD>");
-  if (dvz=='A') {
-    fprintf(of, "<TD WIDTH=\"32\"></TD>");
-    fprintf(of, "<TD><A HREF=\"catalog-%d.html\"><IMG HEIGHT=\"36\" SRC=\"squad.png\"></IMG></A></TD>", year);
-  }
 
   fprintf(of, "</TR>\n");
   fprintf(of, "</TABLE>\n");
@@ -1063,7 +942,7 @@ void RoundsTable(int r) {
 void CalendarTable(int r) {
   int md[13][32];
   for (int i=0; i<=12; i++) for (int j=0; j<=31; j++) md[i][j] = 0;
-  for (int i=51; i<=631; i++) if (played[i]) {
+  for (int i=51; i<=631; i++) if (played[i]) { 
     int m=i/50;
     int z=i%50;
     md[0][m]++;
@@ -1071,7 +950,7 @@ void CalendarTable(int r) {
   }
   int fm = first_d/50;
 //  fprintf(of, "<DIV class=\"caltab\" align=\"center\">\n");
-  fprintf(of, "<BR>\n<TABLE WIDTH=\"96%%\" BORDER=\"1\" RULES=\"columns\" FRAME=\"box\">\n");
+  fprintf(of, "<BR>\n<TABLE WIDTH=\"96%%\" BORDER=\"1\" RULES=\"columns\" FRAME=\"box\">\n");  
   fprintf(of, "<THEAD BGCOLOR=\"DDDDDD\">\n<TR>\n");
   for (int m=fm-1; m<fm+11; m++) {
     int i = (m%12)+1;
@@ -1085,7 +964,7 @@ void CalendarTable(int r) {
     for (int z=1; z<=31; z++) {
       int d=50*i+z;
       if (played[d]) {
-        if (r!=d)
+        if (r!=d) 
           fprintf(of, "<A HREF=\"%s-d%d.html\"> %d </A>", sf, d, z);
         else
           fprintf(of, "<A HREF=\"%s-d%d.html\"><FONT COLOR=\"FF2200\"><B> %d </B></FONT></A>", sf, d, z);
@@ -1104,7 +983,7 @@ void DatesTable(int r) {
       int pr = r-1;
       while (pr>0 && played[pr]==0) pr--;
       if (pr==0) {
-        pr = 649;
+        pr = 649; 
         while (pr>0 && played[pr]==0) pr--;
       }
       int nr = r+1;
@@ -1158,11 +1037,10 @@ void DatesTable(int r) {
 
 void printScoreLink(int h, int i, int j) {
   int rs = res[h][i][j];
-  fprintf(of, "<A HREF=\"reports/%d/%d-%d-%d.html\"><FONT COLOR=\"black\">%d-%d</FONT></A>",
-    year, id[i], id[j], round[h][i][j]%1000, rs/100, rs%100);
+  fprintf(of, "<A HREF=\"reports/%d/%d-%d.html\"><FONT COLOR=\"black\">%d-%d</FONT></A>", year, id[i], id[j], rs/100, rs%100);
 }
 
-void printScore(int h, int i, int j, int rs) {
+void printScore(int h, int g, int rs) {
   int x = rs/100;
   int y = rs%100;
   if (y>=SPECIAL) {
@@ -1172,8 +1050,7 @@ void printScore(int h, int i, int j, int rs) {
     }
     return;
   }
-  fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/%d-%d-%d.html\">%d-%d</A></TD>",
-    year, id[i], id[j], round[h][i][j]%1000, rs/100, rs%100);
+  fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/%d-%d.html\">%d-%d</A></TD>", year, h, g, rs/100, rs%100);
 }
 
 void ResTable(int r) {
@@ -1181,13 +1058,14 @@ void ResTable(int r) {
 //  fprintf(of, "<SECTION>\n");
 //  fprintf(of, "<DIV class=\"restab\">\n");
 
-  int ng, xh[512], xr[512], xi[512], xj[512];
-  fprintf(of, "\n<TABLE WIDTH=\"90%%\" BORDER=\"1\" RULES=\"rows\" FRAME=\"box\">\n");
+  int ng, xh[512], xi[512], xj[512];
+  fprintf(of, "\n<TABLE WIDTH=\"90%%\" BORDER=\"1\" RULES=\"rows\" FRAME=\"box\">\n");  
   fprintf(of, "<THEAD>\n<TR BGCOLOR=\"FFFFFF\">\n");
   fprintf(of, "<TH ALIGN=\"left\"   WIDTH=\"22%%\">Data</TH>\n");
   fprintf(of, "<TH ALIGN=\"right\"  WIDTH=\"33%%\">Gazde</TH>\n");
   fprintf(of, "<TH ALIGN=\"center\" WIDTH=\"12%%\"></TH>\n");
   fprintf(of, "<TH ALIGN=\"left\"   WIDTH=\"33%%\">Oaspeþi</TH>\n");
+  
 
   /* collect */
   ng = 0;
@@ -1195,14 +1073,30 @@ void ResTable(int r) {
   for (int h=0; h<rr; h++) {
   for (int i=0; i<n; i++) {
   for (int j=0; j<n; j++) {
-  if (
+  if ( 
       (calendar==0 && round[h][i][j]/1000 == r && allres[h][i][j]>=0)
       ||
       (calendar==1 && round[h][i][j]%1000 == r && allres[h][i][j]>=0)
      )
-    {
-      xh[ng] = h; xi[ng] = i; xj[ng] = j; ng++;
-    }
+  {
+    xh[ng] = h; xi[ng] = i; xj[ng] = j; ng++;
+    /*
+    fprintf(of, "<TR BGCOLOR=\"DDDDDD\">");
+    int rd = round[h][i][j]%1000;
+    int rn = round[h][i][j]/1000;
+    int rs = allres[h][i][j];
+    int d = 1;
+    if (rd/50 < 8 && rn>numr/2) d = 0;
+    fprintf(of, "<TD>%02d-%02d-%02d</TD>", rd%50, rd/50, year%100-d);
+    fprintf(of, "<TD ALIGN=\"right\">%s</TD>", NickOf(L, id[i], year));
+    printScore(id[i], id[j], rs);
+    fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NickOf(L, id[j], year));
+    fprintf(of, "</TR>");
+//    fprintf(of, "<TR><TD COLSPAN=\"4\"></TD><TR>");
+    AddResult(h, i, j);
+    lastr = rd; 
+    */
+  }
   }
   }
   }
@@ -1234,13 +1128,12 @@ void ResTable(int r) {
     int rn = round[h][i][j]/1000;
     int rs = allres[h][i][j];
     int d = 1;
-    if (winter) d=0;
     if (rd/50 < 8 && rn>numr/2) d = 0;
     int ty = year%100-d;
     if (ty < 0) ty += 100;
     fprintf(of, "<TD>%02d-%02d-%02d</TD>", rd%50, rd/50, ty);
     fprintf(of, "<TD ALIGN=\"right\">%s</TD>", NickOf(L, id[i], year));
-    printScore(h, i, j, rs);
+    printScore(id[i], id[j], rs);
     fprintf(of, "<TD ALIGN=\"left\">%s</TD>", NickOf(L, id[j], year));
     fprintf(of, "</TR>");
 //    fprintf(of, "<TR><TD COLSPAN=\"4\"></TD><TR>");
@@ -1267,7 +1160,7 @@ void ResTable(int r) {
 //  fprintf(of, "</SECTION>\n");
 }
 
-void threeLetters(char *s) {
+void trim(char *s) {
   if (s[1]==' ' || s[1]=='.') { s[1] = s[2]; s[2] = s[3]; }
   if (s[2]==' ' || s[2]=='.') { s[2] = s[3]; }
   s[3] = 0;
@@ -1287,9 +1180,8 @@ void HTMLPlayerLink(int px, int full) {
   }
   else {
     GetInitial(px, pini);
-    makeHexlink(px);
-    fprintf(of, "<a href=\"jucatori/%s.html\"><FONT COLOR=\"000000\" SIZE=-1>%s%s</FONT></a>",
-      hexlink, (full?ppren[px]:pini), pname[px]);
+    fprintf(of, "<a href=\"jucatori/%03d/%03d.html\"><FONT COLOR=\"000000\" SIZE=-1>%s%s</FONT></a>", 
+      px/1000, px%1000, (full?ppren[px]:pini), pname[px]);
   }
 }
 
@@ -1319,25 +1211,10 @@ void TopScorersTable(int nts) {
   fprintf(of, "</TD></TR></TABLE>\n");
 }
 
-int section(int l) {
-  if (NG>0) {
-    if (l%(n/NG)<(pr1/NG)) return 1;
-    else if (l%(n/NG)<(pr1+pr2)/NG) return 2;
-    else if (l%(n/NG)>=(n-rel1)/NG) return 3;
-    else if (l%(n/NG)>=(n-(rel1+rel2))/NG) return 4;
-    else return 0;
-  }
-  if (l<pr1) return 1;
-  else if (l<pr1+pr2) return 2;
-  else if (l>=n-rel1) return 3;
-  else if (l>=n-(rel1+rel2)) return 4;
-  else return 0;
-}
-
 void ClasTable(int r, int synoptic) {
   char sn[16];
 
-  fprintf(of, "\n<TABLE  WIDTH=\"100%%\" BORDER=\"1\" RULES=\"rows\" FRAME=\"box\">\n");
+  fprintf(of, "\n<TABLE  WIDTH=\"100%%\" BORDER=\"1\" RULES=\"rows\" FRAME=\"box\">\n");  
   fprintf(of, "<THEAD>\n<TR>\n");
   fprintf(of, "<TH ALIGN=\"right\" WIDTH=\"2%%\">#</TH>\n");
   fprintf(of, "<TH ALIGN=\"center\" WIDTH=\"1%%\"> </TH>\n");
@@ -1354,35 +1231,30 @@ void ClasTable(int r, int synoptic) {
     fprintf(of, "<TH ALIGN=\"center\" WIDTH=\"3%%\"></TH>\n");
     for (int k=0; k<n; k++) {
       strncpy(sn, NickOf(L, id[rank[k]], year), 5);
-      threeLetters(sn);
+      trim(sn);
       fprintf(of, "<TH ALIGN=\"center\" WIDTH=\"3%%\">%s</TH>\n", sn);
     }
   }
   fprintf(of, "</TR>\n</THEAD>\n<TBODY>\n");
   for (int i=0; i<n; i++) {
     int x = rank[i];
-    int sec = section(i);
     fprintf(of, "<TR ");
-    if (sec>0) fprintf(of, "BGCOLOR=\"%s\" ", fxcol[sec-1]);
-    else if (i%2==1) fprintf(of, "BGCOLOR=\"DDFFFF\" ");
-/*
     if (NG>0) {
       if (i%(n/NG)<(pr1/NG)) fprintf(of, "BGCOLOR=\"77FF77\" ");
-      else if (i%(n/NG)<(pr1+pr2)/NG) fprintf(of, "BGCOLOR=\"CCFFCC\" ");
+      else if (i%(n/NG)<(pr1+pr2)/NG) fprintf(of, "BGCOLOR=\"AAFFAA\" ");
       else if (i%(n/NG)>=(n-rel1)/NG) fprintf(of, "BGCOLOR=\"FF8888\" ");
       else if (i%(n/NG)>=(n-(rel1+rel2))/NG) fprintf(of, "BGCOLOR=\"F0E0B0\" ");
-      else
+      else 
       if (i%2==1) fprintf(of, "BGCOLOR=\"DDFFFF\" ");
     }
     else {
       if (i<pr1) fprintf(of, "BGCOLOR=\"77FF77\" ");
-      else if (i<pr1+pr2) fprintf(of, "BGCOLOR=\"CCFFCC\" ");
+      else if (i<pr1+pr2) fprintf(of, "BGCOLOR=\"AAFFAA\" ");
       else if (i>=n-rel1) fprintf(of, "BGCOLOR=\"FF8888\" ");
       else if (i>=n-(rel1+rel2)) fprintf(of, "BGCOLOR=\"F0E0B0\" ");
-      else
+      else 
       if (i%2==1) fprintf(of, "BGCOLOR=\"DDFFFF\" ");
     }
-*/
     fprintf(of, ">\n");
     if (NG>0) {
       fprintf(of, "<TD ALIGN=\"right\">%d. </TD>\n", (i%(n/NG))+1);
@@ -1408,9 +1280,8 @@ void ClasTable(int r, int synoptic) {
     fprintf(of, "<TD ALIGN=\"right\">%d</TD>\n", gsc[x]);
     fprintf(of, "<TD ALIGN=\"center\">%c</TD>\n", (tbr%10<2?'-':':'));
     fprintf(of, "<TD ALIGN=\"right\">%d</TD>\n", gre[x]);
-    int points =  ppv*win[x]+drw[x];
+		int points =  ppv*win[x]+drw[x];
     if (pen[x]!=0 && after(pdt[x],lastr)) points -= pen[x];
-    if (r > split_after) points = pts[x];
     fprintf(of, "<TD ALIGN=\"right\">%d</TD>\n", points);
     if (synoptic) {
       fprintf(of, "<TD ALIGN=\"center\" </TD>");
@@ -1439,7 +1310,7 @@ void ClasTable(int r, int synoptic) {
         fprintf(of, "</TD>");
       }
     }
-    fprintf(of, "</TR>\n");
+    fprintf(of, "</TR>\n");    
     if (NG>0 && (i+1)==n/2) {
       fprintf(of, "<TR><TD>---</TD></TR>\n");
     }
@@ -1449,10 +1320,10 @@ void ClasTable(int r, int synoptic) {
 
 void HomeAwayTable() {
   char sn[16];
-  HStandings();
-  GStandings();
+  HRanking();
+  GRanking();
 
-  fprintf(of, "<BR>\n<TABLE  WIDTH=\"100%%\" BORDER=\"1\" RULES=\"rows\" FRAME=\"box\">\n");
+  fprintf(of, "<BR>\n<TABLE  WIDTH=\"100%%\" BORDER=\"1\" RULES=\"rows\" FRAME=\"box\">\n");  
   fprintf(of, "<THEAD>\n<TR>\n");
 
   fprintf(of, "<TH ALIGN=\"right\" WIDTH=\"2%%\">#</TH>\n");
@@ -1510,98 +1381,62 @@ void HomeAwayTable() {
     fprintf(of, "<TD ALIGN=\"right\">%d</TD>\n", ggre[x]);
     fprintf(of, "<TD ALIGN=\"right\">%d</TD>\n", ppv*gwin[x]+gdrw[x]);
 
-    fprintf(of, "</TR>\n");
+    fprintf(of, "</TR>\n");    
   }
   fprintf(of, "</TBODY>\n</TABLE>\n");
 
 }
 
-int restype(int x, int y) {
-  if (x<0 || y<0) return 0;
-  if (x>y) return 1;
-  else if (x==y) return 2;
-  else return 3;
-}
-
 void PosTable(int r) {
-  int ha, opp, gf, ga;
-  char sn[16];
   fprintf(of, "<BR>\n<TABLE BORDER=\"1\" RULES=\"all\" FRAME=\"box\">\n");
-  fprintf(of, "<THEAD>\n<TR BGCOLOR=\"DDDDDD\">\n");
-  fprintf(of, "<TH ALIGN=\"left\">Echipa / Etapa</TH>\n");
+  fprintf(of, "<THEAD>\n<TR>\n");
+  fprintf(of, "<TH ALIGN=\"left\">Echipa / Loc</TH>\n");
   for (int i=1; i<=r; i++)
-    fprintf(of, "<TH  STYLE=\"padding-left:3px;padding-right:3px;\" ALIGN=\"center\">%02d</TH>\n", i);
+    fprintf(of, "<TH ALIGN=\"right\">%02d</TH>\n", i);
   fprintf(of, "</TR>\n</THEAD>\n<TBODY>\n");
   for (int i=0; i<n; i++) {
     int x = rank[i];
     fprintf(of, "<TR>");
-    fprintf(of, "<TD ROWSPAN=\"2\" ");
+    fprintf(of, "<TD ");
     if (i%2==1) fprintf(of, "BGCOLOR=\"DDFFFF\"");
     fprintf(of, ">%s</TD>", NickOf(L, id[x], year));
     for (int j=1; j<=r; j++) {
       int loc = pos[x][j]-1;
-      int sec = section(loc);
-      fprintf(of, "<TD ALIGN=\"right\" ");
-      if (sec>0) fprintf(of, "BGCOLOR=\"%s\" ", fxcol[sec-1]);
-      else if (i%2==1) fprintf(of, "BGCOLOR=\"DDFFFF\" ");
-     fprintf(of, "><I>%d</I></TD>", pos[x][j]);
-    }
-    fprintf(of, "</TR>\n");
-
-    fprintf(of, "<TR>");
-    for (int j=1; j<=r; j++) {
-      int k = FindOpponentAndResult(x, j, ha, opp, gf, ga);
-      fprintf(of, "<TD ALIGN=\"center\" ");
-//      if (i%2==1) fprintf(of, "BGCOLOR=\"DDFFFF\">");
-//      else fprintf(of, ">");
-     if (k<0 || gf < 0 || opp < 0 || opp >= n) {
-        fprintf(of, "/>");
-      } else {
-        strncpy(sn, NickOf(L, id[opp], year), 5);
-        threeLetters(sn);
-         int rt = restype(gf, ga);
-         fprintf(of, " BGCOLOR=\"%s\">", resbgcol[rt]);
-         if (ha==1) {
-//           fprintf(of, "<A HREF=\"reports/%d/%d-%d-%d.html\"><FONT SIZE=-1 COLOR=\"%s\">%d-%d</FONT></A>",
-           fprintf(of, "<A HREF=\"reports/%d/%d-%d-%d.html\"><FONT SIZE=-1>%d-%d</FONT></A>",
-             year, id[x], id[opp], round[k][x][opp]%1000, gf, ga);
-         } else {
-//           fprintf(of, "<A HREF=\"reports/%d/%d-%d-%d.html\"><FONT SIZE=-1 COLOR=\"%s\">%d-%d</FONT></A>",
-           fprintf(of, "<A HREF=\"reports/%d/%d-%d-%d.html\"><FONT SIZE=-1>%d-%d</FONT></A>",
-             year, id[opp], id[x], round[k][opp][x]%1000, gf, ga);
-         }
-         fprintf(of, "</TD>");
-      }
+     fprintf(of, "<TD ALIGN=\"right\" ");
+      if (loc<pr1) fprintf(of, "BGCOLOR=\"77FF77\"");
+      else if (loc<pr1+pr2) fprintf(of, "BGCOLOR=\"AAFFAA\"");
+      else if (loc>=n-rel1) fprintf(of, "BGCOLOR=\"FF8888\"");
+      else if (loc>=n-(rel1+rel2)) fprintf(of, "BGCOLOR=\"F0E0B0\"");
+      else                                  
+      if (i%2==1) fprintf(of, "BGCOLOR=\"DDFFFF\"");
+     fprintf(of, ">%d</TD>", pos[x][j]);
     }
     fprintf(of, "</TR>\n");
   }
   fprintf(of, "</TBODY>\n</TABLE>\n");
 }
 
-void TableHeader() {
+void TableHeader() {   
   fprintf(of, "<BR>\n");
   fprintf(of, "\n<TABLE BGCOLOR=\"DDDDDD\" BORDER=\"0\" RULES=\"rows\" FRAME=\"box\">\n");
 }
 
-void PrintRound(int r) {
-  if (r == split_after + 1) {
-    AdjustStats();
-  }
-  HTMLHeader(r);
+void PrintRound(int i) {
+  HTMLHeader(i);
   fprintf(of, "\n<TABLE WIDTH=\"99%%\" BORDER=\"0\">\n");
   fprintf(of, "<TD ALIGN=\"left\" VALIGN=\"top\">\n");
-  ResTable(r);
+  ResTable(i);
   fprintf(of, "</TD>");
   fprintf(of, "<TD WIDTH=\"50%%\" ALIGN=\"left\" VALIGN=\"top\">\n");
-  NavTable(r);
-  RoundsTable(r);
+  NavTable(i);
+  RoundsTable(i);
   fprintf(of, "</TD>\n</TABLE>");
-  Standings(r);
-  for (int t=0; t<n; t++) pos[rank[t]][r] = t+1;
+  Ranking();
+  for (int t=0; t<n; t++) pos[rank[t]][i] = t+1;
   if (dvz=='A') { TopScorers(); TopScorersTable(10); }
-  ClasTable(r, 1);
+  ClasTable(i, 1);
   HomeAwayTable();
-  if (r>1) PosTable(r);
+  if (i>1) PosTable(i);
   HTMLFooter();
 }
 
@@ -1615,7 +1450,7 @@ void PrintDate(int i) {
   NavTable(i);
   CalendarTable(i);
   fprintf(of, "</TD>\n</TABLE>");
-  Standings(0);
+  Ranking();
   if (dvz=='A') { TopScorers(); TopScorersTable(10); }
   ClasTable(i, 1);
   HomeAwayTable();
@@ -1634,7 +1469,6 @@ int main(int argc, char* argv[]) {
     printf("ERROR: No input file specified.\n");
     return -1;
   }
-
   sprintf(sf, "%s", argv[1]);
   dvz = sf[0] - 32;
   char spl[3];
@@ -1650,13 +1484,6 @@ int main(int argc, char* argv[]) {
     printf("ERROR: file %s not found.\n", argv[1]);
     return -2;
   }
-
-  split_after = 1000;
-  split_top = 0;
-  split_points = 0;
-  cancel_gdiff = 0;
-  vs_top = n;
-
   char *ystr = strtok(argv[1], ".");
   ystr = strtok(NULL, " ");
   if (ystr) year = atoi(ystr); else year = 0;
@@ -1670,7 +1497,7 @@ int main(int argc, char* argv[]) {
   for (int i=0; i<650; i++) played[i] = 0;
   for (int i=0; i<650; i++) for (int j=0; j<20; j++) sched[i][j] = 0;
   if (argc > 2) {
-    int i=2;
+    int i=2; 
     do {
       if (strcmp(argv[i],"-")==0) full = false;
       else if (argv[i][0] == '-') {
@@ -1694,19 +1521,6 @@ int main(int argc, char* argv[]) {
         }
         else if (strcmp(argv[i], "-d")==0) {
           decorate = 0;
-        }
-        else if (strcmp(argv[i], "-split")==0 && i<argc-2) {
-          split_after = atoi(argv[++i]);
-          split_top = atoi(argv[++i]);
-        }
-        else if (strcmp(argv[i], "-pts")==0 && i<argc-1) {
-          split_points = atoi(argv[++i]);
-        }
-        else if (strcmp(argv[i], "-gd")==0 && i<argc-1) {
-          cancel_gdiff = atoi(argv[++i]);
-        }
-        else if (strcmp(argv[i], "-vstop")==0 && i<argc-1) {
-          vs_top = atoi(argv[++i]);
         }
         else
           printf("Unknown option: %s\n", argv[i]);
@@ -1749,5 +1563,15 @@ int main(int argc, char* argv[]) {
     }
   }
 
+/*
+  for (int i=0; i<NC; i++) {
+    if (L[i]) delete L[i];
+    delete[] club[i];
+    delete[] mnem[i];
+  }
+  delete[] club;
+  delete[] mnem;
+  delete[] L;
+*/
   return 0;
 }

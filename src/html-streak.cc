@@ -15,8 +15,6 @@ char **club;
 char **mnem;
 int *FY, *LY, *MAX;
 int fd, ld;
-int num_winter;
-int *start_winter, *end_winter;
 
 int id[MAX_N];
 int round[MAX_RR][MAX_N][MAX_N], res[MAX_RR][MAX_N][MAX_N];
@@ -331,18 +329,6 @@ void Load() {
   int dummy, n, p, t, d, y;
   char *dv, *pl, *yr, *suf;
 
-  num_winter = 0;
-  f = fopen("winter.dat", "rt");
-  if (f!=NULL) {
-    fscanf(f, "%d\n", &num_winter);
-    start_winter = new int[num_winter];
-    end_winter = new int[num_winter];
-    for (int i=0; i<num_winter; i++) {
-      fscanf(f, "%d %d\n", start_winter+i, end_winter+i);
-    }
-    fclose(f);
-  }
-
   f = fopen("teams.dat", "rt");
   fscanf(f, "%d\n", &NC);
   club = new char*[NC];
@@ -522,12 +508,6 @@ void Load() {
 
 }
 
-int isWinter(int y) {
-  for (int  i=0; i<num_winter; i++) {
-    if (y>=start_winter[i] && y<=end_winter[i]) return 1;
-  }
-  return 0;
-}
 
 int LoadFile(char *filename) {
   FILE *f;
@@ -576,7 +556,7 @@ int LoadFile(char *filename) {
     if (round[0][i][0]/1000 == 1 && round[0][i][0]%1000 > 200) fd = round[0][i][0]%1000 - 10;
   }
   if (fd == 0) fd = 365;
-  if ((fd > 300) && !isWinter(year)) seas = seas-1;
+  if (fd > 300) seas = seas-1;
   // scan all dates;
   for (int d = fd; d<fd+649; d++) {
     if (d==651) seas++;

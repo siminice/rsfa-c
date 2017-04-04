@@ -571,15 +571,15 @@ void Evol(int a) {
   fprintf(of, "<HTML>\n<TITLE>Evoluţie istorică %s</TITLE>\n", NameOf(L, a, 3000));
   fprintf(of, "<HEAD>\n<link href=\"css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(of, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
-  fprintf(of, "</HEAD>\n<BODY BGCOLOR=\"777777\">\n");
+  fprintf(of, "</HEAD>\n<BODY BGCOLOR=\"333333\">\n");
   fprintf(of, "<H2>Evoluţie istorică %s</H2>\n", NameOf(L, a, 3000));
-  fprintf(of, "<UL><LI><A HREF=\"palmares-%d.html\"><FONT COLOR=\"000000\" SIZE=+1>Palmares</FONT></A></LI>\n", a);
-  fprintf(of, "<LI><A HREF=\"consecutive-%d.html\"><FONT COLOR=\"000000\" SIZE=+1>Serii consecutive</FONT></A></LI>\n", a);
-  fprintf(of, "<LI><A HREF=\"lot-%d.html\"><FONT COLOR=\"000000\" SIZE=+1>Loturi jucători</FONT></A></LI>\n", a);
+  fprintf(of, "<UL><LI><A HREF=\"palmares-%d.html\"><FONT SIZE=+1>Palmares</FONT></A></LI>\n", a);
+  fprintf(of, "<LI><A HREF=\"consecutive-%d.html\"><FONT SIZE=+1>Serii consecutive</FONT></A></LI>\n", a);
+  fprintf(of, "<LI><A HREF=\"lot-%d.html\"><FONT SIZE=+1>Loturi jucători</FONT></A></LI>\n", a);
   fprintf(of, "</UL>\n");
 
   fprintf(of, "<TABLE  WIDTH=\"85%%\" BORDER=\"1\" RULES=\"rows\" FRAME=\"box\">\n");
-  fprintf(of, "<THEAD>\n<TR BGCOLOR=\"EEEEEE\">\n");
+  fprintf(of, "<THEAD>\n<TR>\n");
   fprintf(of, "<TH ALIGN=\"right\"  WIDTH=\"4%%\">Sezon</TH>\n");
   fprintf(of, "<TH ALIGN=\"center\" WIDTH=\"4%%\">Div</TH>\n");
   fprintf(of, "<TH ALIGN=\"right\"  WIDTH=\"2%%\">#</TH>\n");

@@ -42,11 +42,11 @@ struct Aliases {
   char* GetName(int y);
   char* GetNick(int y);
 };
-
+                 
 //-------------------------------------
 
 alias::alias(int y, char *s, char *n) {
-  year = y;
+  year = y;  
   name = (char*) malloc(strlen(s)+1);
   strcpy(name, s);
   if (n != NULL) {
@@ -55,14 +55,14 @@ alias::alias(int y, char *s, char *n) {
   }
   else nick = NULL;
 };
-
+  
 alias::~alias() {
   if (name) delete name;
   if (nick) delete nick;
 };
-
+  
 node::node(alias *a, node *n) {
-  data = a;
+  data = a;  
   next = n;
 };
 
@@ -74,11 +74,11 @@ node::~node() {
 Aliases::Aliases() {
   list = NULL;
 };
-
+  
 Aliases::~Aliases() {
  delete list;
 }
-
+  
 void Aliases::Append(alias *a) {
   node *n = (node*) malloc(sizeof(node));
   n->data = a;
@@ -98,12 +98,12 @@ char* Aliases::GetName(int y) {
   }
   return s;
 }
-
+  
 char* Aliases::GetNick(int y) {
   if (!list) return NULL;
   node *n = list;
   char *s = n->data->nick;
-  int x = n->data->year;
+  int x = n->data->year;  
   while (y < x && n->next != NULL) {
     n = n->next;
     s = n->data->nick;
@@ -111,17 +111,17 @@ char* Aliases::GetNick(int y) {
   }
   return s;
 }
-
+ 
 Aliases **L;
 
 //--------------------------------------------------
-
+  
 char *NameOf(Aliases **L, int t, int y) {
-  char *s = L[t]->GetName(y);
+  char *s = L[t]->GetName(y);  
   if (!s) return club[t];
   return s;
 }
-
+      
 char *NickOf(Aliases **L, int t, int y) {
   char *s = L[t]->GetNick(y);
   if (!s) return mnem[t];
@@ -213,9 +213,9 @@ int Load() {
   ND = 0;
   DIR *dp;
   struct dirent *ep;
-  dp = opendir("./");
-  if (dp != NULL) {
-      while (ep = readdir (dp)) {
+  dp = opendir("./"); 
+  if (dp != NULL) {  
+      while (ep = readdir (dp)) { 
         strcpy(s, ep->d_name);
         dv = strtok(s, ".");
         yr = strtok(NULL, ".");
@@ -223,7 +223,7 @@ int Load() {
         if (dv!=NULL && yr!=NULL && suf==NULL) {
           int l = strlen(dv);
           if (l==0 || l>3) continue;
-          d = ((int) s[0]) - 97;
+          d = ((int) s[0]) - 97; 
           if (d<0 || d>=MAX_LEVELS) continue;
           if (d+1>ND) ND = d+1;
           if (l>1) p = atoi(dv+1); else p = 1;
@@ -236,12 +236,12 @@ int Load() {
           }
         }
       }
-      closedir(dp);
+      closedir(dp);  
       for (int d=0; d<ND; d++)
         printf("%c: %d - %d (max: %d)\n", (char) (d+65), FY[d], LY[d], MAX[d]);
   }
   else
-   printf("ERROR: Couldn't open the directory.\n");
+   printf("ERROR: Couldn't open the directory.\n");  
 
   for (int d=0; d<ND; d++) {
     if (MAX[d]>0) {
@@ -284,7 +284,7 @@ int Load() {
           part[d][y][i][0] = dummy;
           part[d][y][i][1] = n;
           for (int j=0; j<n; j++) {
-            fscanf(f, "%d", &t);
+            fscanf(f, "%d", &t); 
             part[d][y][i][j+2] = t;
           }
           fgets(s, 200, f);
@@ -306,55 +306,10 @@ void SeasonName(int y, char *ss) {
   else sprintf(ss, "%d/%02d", y-1, y%100);
 }
 
-int numPools(int d, int y) {
-  if (d<0 || d>=MAX_LEVELS) return 0;
-  if (y<FY[d] || y>LY[d]) return 0;
-  int n=0;
-  for (int j=0; j<MAX[d]; j++) {
-    if (part[d][y-FY[d]][j][1] > 0) n++;
-  }
-  return n;
-}
-
-int lastRound(int d, int p, int y) {
-  char filename[128];
-  char s[500], *tok[12];
-  int n, ppv, tbr, pr1, pr2, rel1, rel2, rnd, numr;
-  int maxr = 0;
-
-  if (p==0) {
-    sprintf(filename, "%c.%d", (char)(d+97), y);
-  } else {
-    sprintf(filename, "%c%d.%d", (char)(d+97), p, y);
-  }
-  FILE *f = fopen(filename, "rt");
-  if (!f) return 0;
-
-  fscanf(f, "%d %d %d %d %d %d %d\n", &n, &ppv, &tbr, &pr1, &pr2, &rel1, &rel2);
-  numr = 1 + tbr/10;
-  for (int i=0; i<n; i++) {
-    fgets(s, 500, f);
-  }
-  int r, z;
-  for (int k=0; k<numr; k++) {
-   for (int i=0; i<n; i++) {
-    for (int j=0; j<n; j++) {
-      fscanf(f, "%d %d", &r, &z);
-      int rnd = r/1000;
-      if (rnd > maxr) maxr = rnd;
-    }
-    fscanf(f, "\n");
-   }
-  }
-  fclose(f);
-  if (maxr==0) maxr = 2*(n-1+(n%2));
-  return maxr;
-}
-
 //---------------------------------------------
 
 int main(int argc, char* argv[]) {
-  int n, maxr;
+  int n;
   char ss[32];
   int nw[2000];
 
@@ -378,18 +333,16 @@ int main(int argc, char* argv[]) {
 
   FILE *f = fopen("index.html", "wt");
   if (f==NULL) return 1;
-  fprintf(f, "<HTML>\n");
-  fprintf(f, "<TITLE>%s</TITLE>\n<HEAD>\n", liga);
+  fprintf(f, "<html>\n");
+  fprintf(f, "<HEAD><title>%s</title>\n", liga);
   fprintf(f, "<link href=\"css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
-  fprintf(f, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
-  fprintf(f, "</HEAD>\n<BODY BGCOLOR=\"333333\">");
+  fprintf(f, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2>\"\n");
+  fprintf(f, "</head>\n");
   fprintf(f, "<center>\n");
   fprintf(f, "<H2>%s</H2>\n", liga);
-//  fprintf(f, "<table border=\"2\" bgcolor=\"FFE4C4\" width=\"54%%\" align=\"center\">\n");
-  fprintf(f, "<table cellpadding=\"1\" border=\"1\" bgcolor=\"999999\" width=\"65%%\" align=\"center\">\n");
+  fprintf(f, "<table border=\"2\" bgcolor=\"FFE4C4\" width=\"54%%\" align=\"center\">\n");
   fprintf(f, "<thead>\n");
-  fprintf(f, "<TH>Sezon</TH>");
-  fprintf(f, "<TH>Campioanã</TH>");
+  fprintf(f, "<TH>An</TH>");
   for (int d=0; d<MAX_LEVELS; d++) {
     if (FY[d]<2100) {
       fprintf(f, "<th colspan=\"%d\">%c</th>", MAX[d]+1, (char)(d+65));
@@ -406,44 +359,24 @@ int main(int argc, char* argv[]) {
     }
     SeasonName(y, ss);
     int champ = part[0][y-FY[0]][0][2];
-    fprintf(f, "<TR><TD ALIGN=\"center\"><B>%s</B></TD>", ss);
     if (y<LY[0] && champ>=0 && champ<NC) {
       nw[champ]++;
-      fprintf(f, "<TD> <A HREF=\"istoric-%d.html\"><FONT COLOR=\"000000\">%s</FONT></A> (%d)</TD>", champ, NameOf(L, champ, y), nw[champ]);
+      fprintf(f, "<TR><TD>%s: %s (%d)</TD>", ss, NickOf(L, champ, y), nw[champ]);
     }
-    else if (y==LY[0] && champ>=0 && champ<NC) {
-      fprintf(f, "<TD> -- <A HREF=\"istoric-%d.html\"><FONT COLOR=\"000000\"><I>%s?</I></FONT></A> (%d)</TD>", champ, NameOf(L, champ, y), nw[champ]+1);
-    }
-    else {
-      fprintf(f, "<TD></TD>");
-    }
+    else 
+      fprintf(f, "<TR><TD>%s:</TD>", ss);
     for (int d=0; d<MAX_LEVELS; d++) {
       if (y>=FY[d] && y<=LY[d]) {
         n = part[d][y-FY[d]][0][1];
-        int g = numPools(d, y);
-        maxr = lastRound(d, 0, y);
-        int gap = 0;
-        int common = 1;
         if (n>0) {
-          if (g>1) {
-            fprintf(f, "<TD ALIGN=\"center\"><A HREF=\"%c.%d-r%d.html\">%c</A></TD>", (char)(d+97), y, maxr, (char)(d+65));
-          } else {
-            fprintf(f, "<TD ALIGN=\"center\" COLSPAN=\"%d\"><A HREF=\"%c.%d-r%d.html\">%c</A></TD>", MAX[d]+1, (char)(d+97), y, maxr, (char)(d+65));
-          }
-        } else {
-          common = 0;
+          fprintf(f, "<TD><A HREF=\"%c.%d-r%d.html\">%c</A></TD>", (char)(d+97), y, 2*(n-1), (char)(d+65));
         }
         for (int p=1; p<=MAX[d]; p++) {
           n = part[d][y-FY[d]][p][1];
-          maxr = lastRound(d, p, y);
           if (n>0) {
-            fprintf(f, "<TD ALIGN=\"center\"><A HREF=\"%c%d.%d-r%d.html\">%c%d</A></TD>", (char)(d+97), p, y, maxr, (char)(d+65), p);
-          } else {
-            gap++;
+            fprintf(f, "<TD><A HREF=\"%c%d.%d-r%d.html\">%c%d</A></TD>", (char)(d+97), p, y, 2*(n-1), (char)(d+65), p);
           }
-        }
-        if (gap>0 && gap + common < MAX[d]+1) {
-            fprintf(f, "<TD COLSPAN=\"%d\">", gap + 1 - common);
+          else fprintf(f, "<TD/>");
         }
       }
 //      else {
@@ -457,16 +390,15 @@ int main(int argc, char* argv[]) {
   fprintf(f, "</center>\n");
   fprintf(f, "<HR>\n");
   fprintf(f, "<UL>\n");
-
-  fprintf(f, "<LI><A HREF=\"podium.html\"><FONT COLOR=\"999999\">Podium</FONT></A></LI>\n");
-  fprintf(f, "<LI><A HREF=\"alltime-a.html\"><FONT COLOR=\"999999\">Clasament <I>all-time</I> Liga 1</FONT></A></LI>\n");
-  fprintf(f, "<LI><A HREF=\"alltime-b.html\"><FONT COLOR=\"999999\">Clasament <I>all-time</I> Liga 2</FONT></A></LI>\n");
-  fprintf(f, "<LI><A HREF=\"alltime-c.html\"><FONT COLOR=\"999999\">Clasament <I>all-time</I> Liga 3</FONT></A></LI>\n");
-  fprintf(f, "<LI><A HREF=\"consecutive.html\"><FONT COLOR=\"999999\">Serii consecutive</FONT></A></LI>\n");
-  fprintf(f, "<LI><A HREF=\"consecutive-a.html\"><FONT COLOR=\"999999\">Serii consecutive - Liga 1</FONT></A></LI>\n");
+  fprintf(f, "<LI><A HREF=\"podium.html\"><FONT COLOR=\"110055\">Podium</FONT></A></LI>\n");
+  fprintf(f, "<LI><A HREF=\"alltime-a.html\"><FONT COLOR=\"110055\">Clasament <I>all-time</I> Liga 1</FONT></A></LI>\n");
+  fprintf(f, "<LI><A HREF=\"alltime-b.html\"><FONT COLOR=\"110055\">Clasament <I>all-time</I> Liga 2</FONT></A></LI>\n");
+  fprintf(f, "<LI><A HREF=\"alltime-c.html\"><FONT COLOR=\"110055\">Clasament <I>all-time</I> Liga 3</FONT></A></LI>\n");
+  fprintf(f, "<LI><A HREF=\"consecutive.html\"><FONT COLOR=\"110055\">Serii consecutive</FONT></A></LI>\n");
+  fprintf(f, "<LI><A HREF=\"consecutive-a.html\"><FONT COLOR=\"110055\">Serii consecutive - Liga 1</FONT></A></LI>\n");
   fprintf(f, "</UL>\n");
   fprintf(f, "</html>");
-  fclose(f);
-
+  fclose(f);  
+ 
   return 0;
 }

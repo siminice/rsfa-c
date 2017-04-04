@@ -47,24 +47,23 @@
 #define DB_T1		 8
 #define DB_T2		31
 
-#define EV_GOAL      0
-#define EV_OWNGOAL   1
-#define EV_PKGOAL    2
-#define EV_PKMISS    3
-#define EV_YELLOW    4
-#define EV_RED       5
-#define EV_YELLOWRED 6
+#define EV_GOAL		 0
+#define EV_OWNGOAL	 1
+#define EV_PKGOAL	 2
+#define EV_PKMISS	 3
+#define EV_YELLOW	 4
+#define EV_RED	 	 5
+#define EV_YELLOWRED	 6
 
 #define SPECIAL		50
 #define LOSS_BOTH_0	50
 #define LOSS_BOTH_9	59
 
-#define ROSTER_SIZE 22
-
 const char *month[] = {"", "Ian", "Feb", "Mar", "Apr", "Mai", "Iun",
                      "Iul", "Aug", "Sep", "Oct", "Noi", "Dec"};
 const char *romonth[] = {"", "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
                      "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"};
+
 const char *evicon[] = {"g", "og", "pg", "pm", "cg" , "cr", "cgr"};
 
 char **club;
@@ -89,7 +88,7 @@ int  NG;
 bool winter;
 int num_winter;
 int *start_winter, *end_winter;
-int roster[2*ROSTER_SIZE], annotation[2*ROSTER_SIZE];
+int roster[44];
 int nev, evp[EV_COLS], evm[EV_COLS], evt[EV_COLS];
 
 /* *************************************** */
@@ -101,20 +100,6 @@ int NP;
 char **pmnem, **pname, **ppren, **pdob, **pcty, **ppob, **pjud;
 int *psez, *pmeci, *ptit, *pint, *prez, *pban, *pmin, *pgol, *pgre, *prnk;
 int *csez, *cmeci, *ctit, *cint, *crez, *cban, *cmin, *cgol, *cgre, *crnk;
-
-//---------------------------
-char *hexlink = new char[32];
-void makeHexlink(char *str) {
-  sprintf(hexlink, "%x%x%x%x%x%x",
-    ((unsigned char)str[0]),
-    ((unsigned char)str[1]),
-    ((unsigned char)str[2]),
-    ((unsigned char)str[3]),
-    ((unsigned char)str[4]),
-    ((unsigned char)str[5]));
-  hexlink[12]=0;
-}
-//---------------------------
 
 Catalog Ant, Arb;
 Locations Loc;
@@ -550,7 +535,7 @@ void AddStats(int px, int k, int m) {
   else if (k>=12 && k<=14) {
     if (m>0) { prez[px]++; crez[px]++; }
   }
-  else if (k<=ROSTER_SIZE) {
+  else if (k<=22) {
     if (m==0) { pban[px]++; cban[px]++; }
   }
 }
@@ -561,7 +546,7 @@ void LoadDB() {
   sprintf(filename, "lineups-%d.db", year);
   f = fopen(filename, "rt");
   if (f==NULL) { fprintf(stderr, "ERROR: database %s not found.\n", filename); return; }
-  for (int i=0; i<rr*n*(n-1); i++) {
+  for (int i=0; i<n*(n-1); i++) {
     fgets(s, 5000, f);
     tk[0] = strtok(s, ",\n");
     for (int j=1; j<DB_COLS; j++) tk[j]=strtok(NULL, ",\n");
@@ -579,7 +564,7 @@ void LoadEvents() {
   sprintf(filename, "events-%d.db", year);
   f = fopen(filename, "rt");
   if (f==NULL) { fprintf(stderr, "ERROR: database %s not found.\n", filename); return; }
-  for (int i=0; i<rr*n*(n-1); i++) {
+  for (int i=0; i<n*(n-1); i++) {
     fgets(s, 5000, f);
     tk[0] = strtok(s, ",\n");
     for (int j=1; j<EV_COLS; j++) tk[j]=strtok(NULL, ",\n");
@@ -1064,10 +1049,9 @@ int LoadFile(char *filename) {
   return 1;
 }
 
-int MatchID(int r, int a, int b) {
-  int offset = r*n*(n-1);
+int MatchID(int a, int b) {
   int mid = a*(n-1)+b-(b>a?1:0);
-  return offset + mid;
+  return mid;
 }
 
 int consecutive(int r, int last) {
@@ -1102,12 +1086,12 @@ void SeasonName(int y, char *ss) {
 }
 
 
-void HTMLHeader(int r, int a, int b) {
+void HTMLHeader(int i, int a, int b) {
   char ss[32], sdate[32];
   SeasonName(year, ss);
   fprintf(of, "<!DOCTYPE html>\n");
   fprintf(of, "<head>\n");
-  int z = round[r][a][b]%1000;
+  int z = round[0][a][b]%1000;
   fprintf(of, "  <title>%s vs. %s - %d %s</title>\n", NameOf(L, id[a], year), NameOf(L, id[b], year), z%50, romonth[z/50]);
   fprintf(of, "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\" />\n");
   fprintf(of, "<link rel=\"stylesheet\" href=\"../../css/report.css\" type=\"text/css\" charset=\"iso-8859-2\" />\n");
@@ -1164,7 +1148,7 @@ void HTMLInfoBlock(int r, int a, int b) {
   fprintf(of, "  <div class=\"clearfix\">\n\n");
 
 	char sw[128], *sd, *sh, satt[128];
-  int mid = MatchID(r, a, b);
+  int mid = MatchID(a, b);
   int rg1 = FindPos(rank, n, a);
   int rg2 = FindPos(rank, n, b);
   int rh  = FindPos(hrank, n, a);
@@ -1190,8 +1174,8 @@ void HTMLInfoBlock(int r, int a, int b) {
   fprintf(of, "    </table>\n");
   fprintf(of, "  </div>\n\n");
 
-  int q = round[r][a][b]/1000;
-  int z = round[r][a][b]%1000;
+  int q = round[0][a][b]/1000;
+  int z = round[0][a][b]%1000;
 
   fprintf(of, "  <div class=\"container middle\">\n");
   fprintf(of, "    <div class=\"details clearfix\">\n");
@@ -1252,14 +1236,11 @@ void HTMLInfoBlock(int r, int a, int b) {
 }
 
 void ResetRoster() {
-  for (int i=0; i<2*ROSTER_SIZE; i++) {
-    roster[i] = -1;
-    annotation[i] = 0;
-  }
+  for (int i=0; i<44; i++) roster[i] = -1;
 }
 
 void GetRoster(int r, int a, int b) {
-  int mid = MatchID(r, a, b);
+  int mid = MatchID(a, b);
   char s[DB_CELL], *sp, *sm;
   int rp, rm;
   ResetRoster();
@@ -1277,7 +1258,7 @@ void GetRoster(int r, int a, int b) {
     sm = strtok(NULL, ",\n");
     if (sm!=NULL) rm = atoi(sm); else rm=-1;
     if (sp!=NULL) rp = FindMnem(sp); else rp=-1;
-     if (rm>=0 && rp>=0) roster[ROSTER_SIZE+i-DB_ROSTER2] = rp;
+     if (rm>=0 && rp>=0) roster[22+i-DB_ROSTER2] = rp;
   }
 }
 
@@ -1294,14 +1275,14 @@ void ResetEvents() {
 }
 
 void GetEvents(int r, int a, int b) {
-  int mid = MatchID(r, a, b);
+  int mid = MatchID(a, b);
   int ep, em;
   char s[DB_CELL], *sp, *sm;
   ResetEvents();
   for (int i=0; i<EV_COLS; i++) {
     strcpy(s, edb[mid][i]);
-    sp = strtok(s, "'`\"/,#!\n");
-    sm = strtok(NULL, "'`\"/,#!\n");
+    sp = strtok(s, "'`\"/,\n");
+    sm = strtok(NULL, "'`\"/,\n");
     if (sm!=NULL) em = atoi(sm); else em=-1;
     if (sp!=NULL) ep = FindMnem(sp); else ep=-1;
     if (ep>=0 || em>=0) {
@@ -1310,9 +1291,6 @@ void GetEvents(int r, int a, int b) {
            if (edb[mid][i][6]=='`') evt[i] = EV_OWNGOAL;
       else if (edb[mid][i][6]=='"') evt[i] = EV_PKGOAL;
       else if (edb[mid][i][6]=='/') evt[i] = EV_PKMISS;
-      else if (edb[mid][i][6]=='#') evt[i] = EV_YELLOW;
-      else if (edb[mid][i][6]=='!') evt[i] = EV_RED;
-      else if (edb[mid][i][6]=='*') evt[i] = EV_YELLOWRED;
       nev++;
     }
   }
@@ -1332,12 +1310,8 @@ void SortEvents() {
     }
   } while (!sorted);
   for (int i=0; i<nev; i++) {
-    evp[i] = RosterIdx(evp[i]);
-    if (evp[i]>=0 && evp[i]<2*ROSTER_SIZE) {
-      if (evt[i] == EV_RED) {
-        annotation[evp[i]] = evm[i];
-      }
-    }
+    int rid = RosterIdx(evp[i]);
+    evp[i] = rid;
   }
 }
 
@@ -1348,9 +1322,8 @@ void HTMLPlayerLink(int px, int full) {
   }
   else {
     GetInitial(px, pini);
-    makeHexlink(pmnem[px]);
-    fprintf(of, "<a href=\"../../jucatori/%s.html\">%s %s</a>\n",
-      hexlink, (full?ppren[px]:pini), pname[px]);
+    fprintf(of, "<a href=\"../../jucatori/%03d/%03d.html\">%s %s</a>\n",
+      px/1000, px%1000, (full?ppren[px]:pini), pname[px]);
   }
 }
 
@@ -1358,7 +1331,7 @@ void HTMLEventsBlock(int r, int a, int b) {
   int x = allres[r][a][b]/100;
   int y = allres[r][a][b]%100;
   fprintf(of, " <div class=\"block  clearfix block_match_goals-wrapper\" id=\"g10w\">\n");
-  fprintf(of, "  <h2>Evenimente</h2>\n\n");
+  fprintf(of, "  <h2>Goluri</h2>\n\n");
 
   fprintf(of, "  <div class=\"content  \">\n");
   fprintf(of, "    <div class=\"block_match_goals real-content clearfix \" id=\"g10\">\n\n");
@@ -1377,12 +1350,11 @@ void HTMLEventsBlock(int r, int a, int b) {
     if (evm[e]>90 && evm[e]<120) sprintf(sm, "90+%d'", evm[e]%90);
     if (evp[e]>=0 && evp[e]<44) pid = roster[evp[e]]; else pid = -1;
     hsc = 2;
-    if (evp[e]>= 0 && evp[e]<ROSTER_SIZE) hsc = 1;
-    if (evp[e]>=22 && evp[e]<2*ROSTER_SIZE) hsc = 0;
+    if (evp[e]>= 0 && evp[e]<22) hsc = 1;
+    if (evp[e]>=22 && evp[e]<44) hsc = 0;
     if (evt[e]==EV_OWNGOAL) {
       hsc = 1-hsc;
     }
-    if (evt[e]!=EV_YELLOW) {
     if (hsc==1) {
       fprintf(of, "    <tr class=\"event    expanded\">\n");
       fprintf(of, "      <td class=\"player player-a\">\n");
@@ -1423,7 +1395,6 @@ void HTMLEventsBlock(int r, int a, int b) {
       fprintf(of, "      </td>\n");
       fprintf(of, "    </tr>\n");
     }
-    } // not yellow
   }
 /*
   for (int i=0; i<x; i++) {
@@ -1476,20 +1447,18 @@ void HTMLPlayerTH() {
   fprintf(of, "    <tbody>\n");
 }
 
-void HTMLPlayerTR(int pn, int px, int m) {
+void HTMLPlayerTR(int sn, int px, int m) {
     if (px < 0) {
-      fprintf(of, "      <tr class=\"%s\"></tr>\n", (pn%2==1?"odd":"even"));
+      fprintf(of, "      <tr class=\"%s\"></tr>\n", (sn%2==1?"odd":"even"));
       return;
     }
-    int sn = (pn<=ROSTER_SIZE? pn : pn-ROSTER_SIZE);
     char pini[12];
     GetInitial(px, pini);
-    makeHexlink(pmnem[px]);
     fprintf(of, "      <tr class=\"%s\">\n", (sn%2==1?"odd":"even"));
     fprintf(of, "        <td class=\"shirtnumber\">%d</td>\n", sn);
     fprintf(of, "        <td class=\"player large-link\">\n");
     fprintf(of, "          <img src=\"../../../../thumbs/22/3/%s.png\"/>\n", pcty[px]);
-    fprintf(of, "          <a href=\"../../jucatori/%s.html\">%s %s</a>\n", hexlink, pini, pname[px]);
+    fprintf(of, "          <a href=\"../../jucatori/%03d/%03d.html\">%s %s</a>\n", px/1000, px%1000, pini, pname[px]);
     fprintf(of, "        </td>\n");
     fprintf(of, "        <td class=\"label\">M:</td>\n");
     fprintf(of, "        <td class=\"season_caps\">%d</td>\n", pmeci[px]);
@@ -1498,25 +1467,19 @@ void HTMLPlayerTR(int pn, int px, int m) {
     fprintf(of, "        <td class=\"season_goals\">%d</td>\n", pgol[px]);
     fprintf(of, "        <td class=\"career_goals\"> (%d)</td>\n", cgol[px]);
     fprintf(of, "        <td class=\"bookings\">");
-    if (annotation[pn-1] > 0) {
-      if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", annotation[pn-1]-m);
-      fprintf(of,  "<img src=\"../../cr.png\"/>%d'", annotation[pn-1]);
-    } else {
-      if (sn <=11 && m<90) fprintf(of, "<img src=\"../../so.png\"/>%d'", m+1);
-      else if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", 91-m);
-    }
+    if (sn <=11 && m<90) fprintf(of, "<img src=\"../../so.png\"/>%d'", m+1);
+    else if (sn >=12 && m>0) fprintf(of, "<img src=\"../../si.png\"/>%d'", 91-m);
     fprintf(of, "        </td>\n");
     fprintf(of, "      </tr>\n\n");
 }
 
 void HTMLCoachTR(char *sc) {
   int cix = Ant.FindMnem(sc);
-  fprintf(of, "      <tr class=\"even\">\n");
+  fprintf(of, "      <tr class=\"odd\">\n");
   fprintf(of, "        <td colspan=\"2\" style=\"padding: 0.5em;\">\n");
   if (cix>=0) {
-    makeHexlink(Ant.P[cix].mnem);
-    fprintf(of, "          <strong>Antrenor:</strong> <a href=\"../../antrenori/%s.html\">%s %s</a>\n",
-        hexlink, Ant.P[cix].pren, Ant.P[cix].name);
+    fprintf(of, "          <strong>Antrenor:</strong> <a href=\"../../antrenori/%03d/%03d.html\">%s %s</a>\n",
+        cix/1000, cix%1000, Ant.P[cix].pren, Ant.P[cix].name);
   }
   else {
     fprintf(of, "          <strong>Antrenor:</strong> \n");
@@ -1532,7 +1495,7 @@ void HTMLLineupsBlock(int r, int a, int b) {
   fprintf(of, "  <div class=\"content  \">\n");
   fprintf(of, "    <div class=\"block_match_lineups real-content clearfix \" id=\"l7\">\n\n");
 
-  int mid = MatchID(r, a, b);
+  int mid = MatchID(a, b);
   char spn[32], *spm;
   char pini[5];
   int m, px;
@@ -1581,7 +1544,7 @@ void HTMLLineupsBlock(int r, int a, int b) {
       m = atoi(spm);
     }
     AddStats(px, i, m);
-    HTMLPlayerTR(i+ROSTER_SIZE, px, m);
+    HTMLPlayerTR(i, px, m);
   }
 
   HTMLCoachTR(db[mid][DB_COACH2]);
@@ -1602,7 +1565,7 @@ void HTMLSubsBlock(int r, int a, int b) {
   fprintf(of, "  <div class=\"content  \">\n");
   fprintf(of, "    <div class=\"block_match_substitutes real-content clearfix \" id=\"s8\">\n\n");
 
-  int mid = MatchID(r, a, b);
+  int mid = MatchID(a, b);
   char spn[32], *spm;
   char pini[5];
   int m, px;
@@ -1657,7 +1620,7 @@ void HTMLSubsBlock(int r, int a, int b) {
       m = atoi(spm);
     }
     AddStats(px, i, m);
-    HTMLPlayerTR(i+ROSTER_SIZE, px, m);
+    HTMLPlayerTR(i, px, m);
   }
 
   fprintf(of, "    </tbody>\n");
@@ -1673,15 +1636,14 @@ void HTMLRef(char *sc) {
   int rix = Arb.FindMnem(sc);
   fprintf(of, "          <dt><strong>Arbitru central:  </strong></dt>");
   if (rix>=0) {
-        makeHexlink(Arb.P[rix].mnem);
-		fprintf(of, "<dd><a href=\"../../arbitri/%s.html\">%s %s (%s)</a></dd>",
-          hexlink, Arb.P[rix].pren, Arb.P[rix].name, Arb.P[rix].pob);
+		fprintf(of, "<dd><a href=\"../../arbitri/%03d/%03d.html\">%s %s (%s)</a></dd>",
+        rix/1000, rix%1000, Arb.P[rix].pren, Arb.P[rix].name, Arb.P[rix].pob);
   }
   fprintf(of, "</dt>\n");
 }
 
 void HTMLRefsBlock(int r, int a, int b) {
-  int mid = MatchID(r, a, b);
+  int mid = MatchID(a, b);
   fprintf(of, "  <div class=\"block  clearfix block_match_additional_info-wrapper\" id=\"i6w\">\n");
   fprintf(of, "  <h2>Arbitri ºi observatori</h2>\n");
   fprintf(of, "  <div class=\"content  \">\n");
@@ -1710,6 +1672,20 @@ void HTMLFooter() {
   fprintf(of, "</body>\n</html>");
 }
 
+
+void printScore(int h, int g, int rs) {
+  int x = rs/100;
+  int y = rs%100;
+  if (y>=SPECIAL) {
+    if (y>=LOSS_BOTH_0 && y<=LOSS_BOTH_9) {
+      int z = y%10;
+      fprintf(of, "<TD ALIGN=\"center\"><FONT COLOR=\"red\">p-%d</FONT></TD>", z);
+    }
+    return;
+  }
+  fprintf(of, "<TD ALIGN=\"center\"><A HREF=\"reports/%d/%d-%d.html\">%d-%d</A></TD>", year, h, g, rs/100, rs%100);
+}
+
 void trim(char *s) {
   if (s[1]==' ' || s[1]=='.') { s[1] = s[2]; s[2] = s[3]; }
   if (s[2]==' ' || s[2]=='.') { s[2] = s[3]; }
@@ -1718,7 +1694,7 @@ void trim(char *s) {
 
 void PrintReport(int r, int a, int b) {
   char rfilename[128];
-  sprintf(rfilename, "html/reports/%d/%d-%d-%d.html", year, id[a], id[b], round[r][a][b]%1000);
+  sprintf(rfilename, "html/reports/%d/%d-%d.html", year, id[a], id[b]);
   of = fopen(rfilename, "wt");
   if (of==NULL) { fprintf(stderr, "ERROR: Could not open file %s.\n", rfilename); return; }
 
@@ -1728,7 +1704,7 @@ void PrintReport(int r, int a, int b) {
   HTMLHeader(r, a, b);
   HTMLScoreBlock(r, a, b);
   HTMLInfoBlock(r, a, b);
-  if (allres[r][a][b]>0 || nev>0) {
+  if (allres[r][a][b]>0) {
     HTMLEventsBlock(r, a, b);
   }
   HTMLLineupsBlock(r, a, b);

@@ -8,7 +8,7 @@ int  NC;
 int  id[30], win[30], drw[30], los[30], gsc[30], gre[30], pts[30], pen[30], pdt[30];
 int  lid[30], lwin[30], ldrw[30], llos[30], lgsc[30], lgre[30], lpts[30], lpen[30], lpdt[30];
 int  round[30][30], res[30][30], lround[30][30], lres[30][30];
-int  n, r, tbr, pr1, pr2, rel1, rel2, ppv;
+int  n, r, tbr, pr1, pr2, rel1, rel2, ppv, maxr1;
 
 //--------------------------------------
 
@@ -35,6 +35,7 @@ int PreloadFile(char *filename) {
   FILE *f;
   int i, j, x, y, r, z;
   int ln, lppv, ltbr, lpr1, lpr2, lrel1, lrel2;
+  maxr1 = 0;
   f = fopen(filename, "rt");
   if (NULL == f) { printf("File %s not found for preloading.\n", filename); return 0; }
   // Loading file
@@ -59,10 +60,13 @@ int PreloadFile(char *filename) {
       fscanf(f, "%d %d", &r, &z);
       lround[i][j] = r;
       lres[i][j] = z;
+      int r1 = lround[i][j]/1000;
+      if (r1 > maxr1) maxr1 = r1;
     }
     fscanf(f, "\n");
   }
   fclose(f);
+  return 0;
 }
 
 int LoadFile(char *filename) {
@@ -92,6 +96,11 @@ int LoadFile(char *filename) {
   for (i=0; i<n; i++) {
     for (j=0; j<n; j++) {
       fscanf(f, "%d %d", &r, &z);
+      if (r>=0) {
+        int d2 = r/1000;
+        int z2 = r%1000;
+        r = (d2+maxr1)*1000 + z2;
+      }
       round[per[i]][per[j]] = r;
       res[per[i]][per[j]] = z;
     }
@@ -99,6 +108,7 @@ int LoadFile(char *filename) {
   }
   fclose(f);
   delete[] per;
+  return 0;
 }
 
 void Dump() {

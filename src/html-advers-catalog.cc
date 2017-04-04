@@ -212,42 +212,29 @@ int Load() {
   return 1;
 }
 
-
-int CompactDateLocal(char *s) {
-  if (s==NULL) return 0;
-  char sw[60];
-  strcpy(sw, s);
-  char *sd = strtok(sw, "@");
-  char *sh = strtok(NULL, ",");
-  if (sd==NULL) return 0;
-  char *sz = strtok(sd, "-");
-  char *sm = strtok(NULL, "-");
-  int nz=0, nm=0;
-  if (sz) nz = atoi(sz);
-  if (sm) nm = atoi(sm);
-  return 50*nm+nz;
-}
-
 char *EuroName(int t, int nick, int year) {
   int ct = t/1000;
   int cl = t%1000;
   if (cl==0) return CL[ct]->GetName(year);
   char filename[128];
   char s[128];
-  char *name = new char[64];
-  char *temp = new char[64];
+	char *name = new char[64];
   sprintf(name, "%d/%d", ct, cl);
   sprintf(filename, "../%s/euroteams.dat", dir[ct]);
   FILE *f = fopen(filename, "rt");
-  if (!f) return name;
+ 	if (!f) return name;
   for (int i=0; i<=cl; ++i) fgets(s, 128, f);
-  strcpy(temp, s);
-  name = strtok(temp, ",\n");
-  if (!nick) {
-    name = strtok(NULL, ",\n");
-  }
-  fclose(f);
-  return name;
+  strcpy(name, s);
+	if (nick) {
+	  name[15] = 0;
+	  int k = 14; while (s[k]==' ') s[k--]=0;
+	}
+	else {
+		name = name + 15;
+		name[strlen(name)-1] = 0;
+	}
+	fclose(f);
+	return name;
 }
 
 char *NameOf(Aliases **L, int t, int y) {
@@ -405,10 +392,6 @@ const char *oldECmnem[] = {"SC", "CCE", "CWC", "UEFA"};
 const char *intECmnem[] = {"SC", "LC", "CWC", "UEFA"};
 const char *newECmnem[] = {"SC", "LC", " ", "EL"};
 
-const char *romonth[] = {"", "ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
-                     "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"};
-
-
 /* *************************************** */
 
 int NP;
@@ -437,29 +420,6 @@ int borna[256];
 
 char ofilename[128];
 FILE *of;
-
-//---------------------------
-char *hexlink = new char[32];
-void makeHexlink(int i) {
-  sprintf(hexlink, "%x%x%x%x%x%x",
-    ((unsigned char)pmnem[i][0]),
-    ((unsigned char)pmnem[i][1]),
-    ((unsigned char)pmnem[i][2]),
-    ((unsigned char)pmnem[i][3]),
-    ((unsigned char)pmnem[i][4]),
-    ((unsigned char)pmnem[i][5]));
-  hexlink[12]=0;
-}
-//---------------------------
-int GetYear(char *sd) {
-  if (!sd) return -1;
-  if (strlen(sd)<10) return -1;
-  char sy[16];
-  strncpy(sy, sd+6, 4);
-  sy[4] = 0;
-  int y = strtol(sy, NULL, 10);
-  return y;
-}
 
 /* *************************************** */
 
@@ -621,7 +581,6 @@ void websafeMnem(char *om, char *nm) {
 
 #define DOB_DD_MM_YYYY	0
 #define DOB_YYYYMMDD	1
-#define DOB_FULL        2
 
 int NumericDOB(char *dob, int fmt) {
   char s[12];
@@ -669,15 +628,6 @@ void CanonicDOB(char *dob, int fmt) {
   }
   else if (fmt==DOB_YYYYMMDD) {
     sprintf(dob, "%04d%02d%02d", xy, xm, xd);
-  }
-  else if (fmt==DOB_FULL) {
-    if (xd > 0) {
-      sprintf(dob, "%d %s %d", xd, romonth[xm], xy);
-    } else if (xy>0) {
-      sprintf(dob, "%s %d", romonth[xm], xy);
-    } else {
-      dob[0] = 0;
-    }
   }
 }
 
@@ -998,19 +948,6 @@ void printBGColor(int y, int k, int altc) {
   fprintf(of, ">");
 }
 
-void DatatablesHead() {
-    fprintf(of, "<link rel=\"stylesheet\" type=\"text/css\" href=\"//cdn.datatables.net/1.10.10/css/jquery.dataTables.css\">");
-    fprintf(of, "<script type=\"text/javascript\" language=\"javascript\" src=\"//code.jquery.com/jquery-1.11.3.min.js\"></script>");
-    fprintf(of, "<script type=\"text/javascript\" charset=\"utf8\" src=\"//cdn.datatables.net/1.10.10/js/jquery.dataTables.js\"></script>");
-    fprintf(of, "<script type=\"text/javascript\" class=\"init\">");
-    fprintf(of, "$(document).ready( function () {");
-    fprintf(of, "    $('#all').DataTable( {");
-    fprintf(of, "      pageLength : 100,");
-    fprintf(of, "    } );");
-    fprintf(of, "} );");
-    fprintf(of, "</script>");
-}
-
 void PlayerStats(int pl) {
   int sm, sn, st, sr, sg, xt;
   int ec, en, em, et, er, eg;
@@ -1022,9 +959,8 @@ void PlayerStats(int pl) {
   char wsm[12];
 
   nrow = 0;
-  makeHexlink(pl);
-  fprintf(stderr, "%06d [%s] %s %s.\n", pl, hexlink, ppren[pl], pname[pl]);
-  sprintf(ofilename, "html/eurojucatori/%s.html", hexlink);
+  fprintf(stderr, "Jucãtor %03d/%03d: %s %s.\n", pl/1000, pl%1000, ppren[pl], pname[pl]);
+  sprintf(ofilename, "html/eurojucatori/%03d/%03d.html", pl/1000, pl%1000);
   of = fopen(ofilename, "wt");
   if (of==NULL) {
     fprintf(stderr, "ERROR: cannot write to file %s.\n", ofilename);
@@ -1032,12 +968,12 @@ void PlayerStats(int pl) {
   }
 
   fprintf(of, "<HTML>\n<TITLE>%s %s</TITLE>\n", ppren[pl], pname[pl]);
-  fprintf(of, "<HEAD>\n<link href=\"../css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
+  fprintf(of, "<HEAD>\n<link href=\"../../css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(of, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
   fprintf(of, "</HEAD>\n<BODY>\n");
 
   fprintf(of, "<TABLE CELLSPACING=\"10\" CELLPADDING=\"5\">\n<TR>\n<TD>");
-  fprintf(of, "<H3><IMG SRC=\"../../../thumbs/22/3/%s.png\"></IMG> %s %s</H3>\n", pcty[pl], ppren[pl], pname[pl]);
+  fprintf(of, "<H3><IMG SRC=\"../../../../thumbs/22/3/%s.png\"></IMG> %s %s</H3>\n", pcty[pl], ppren[pl], pname[pl]);
 /*
   fprintf(of, "<UL><LI>Data naºterii: %s </LI>\n", pdob[pl]);
   fprintf(of, "<LI>Locul naºterii: %s\n", ppob[pl]);
@@ -1168,18 +1104,8 @@ void PlayerStats(int pl) {
   }
 */
 
-  char sdob[64];
-  strcpy(sdob, pdob[pl]);
-  CanonicDOB(sdob, DOB_FULL);
-  fprintf(of, "<UL><LI>Data naºterii: %s </LI>\n", sdob);
-  fprintf(of, "<LI>Locul naºterii: %s\n", ppob[pl]);
-  if (pjud[pl]!=NULL && pjud[pl][0]!=0 && pjud[pl][0]!=' ') {
-      fprintf(of, " (%s)", pjud[pl]);
-  }
-  fprintf(of, "</LI>\n");
-
-  fprintf(of, "<H3>Lista meciurilor împotriva echipelor româneºti</H3>\n");
-  fprintf(of, "<TABLE cellpadding=\"1\" WIDTH=\"80%%\" RULES=\"groups\" frame=\"box\">\n");
+	fprintf(of, "<H3>Lista meciurilor împotriva echipelor româneºti</H3>\n");
+  fprintf(of, "<TABLE WIDTH=\"75%%\" cellpadding=\"1\" RULES=\"groups\" frame=\"box\">\n");  
   fprintf(of, "<COLGROUP><COL SPAN=\"5\"></COLGROUP>");
   fprintf(of, "<COLGROUP><COL SPAN=\"2\"></COLGROUP>");
   fprintf(of, "<COLGROUP><COL SPAN=\"3\"></COLGROUP>");
@@ -1235,8 +1161,6 @@ void PlayerStats(int pl) {
 			int hid = atoi(ladb[y][k][DB_HOME]);
 			int aid = atoi(ladb[y][k][DB_AWAY]);
 			int scr = atoi(ladb[y][k][DB_SCORE]);
-            int ny  = GetYear(ladb[y][k][DB_DATE]);
-            int zi  = CompactDateLocal(ladb[y][k][DB_DATE]);
 			int ecl = ladb[y][k][DB_COMP][0] - 48;
 			int rnd = atoi(ladb[y][k][DB_ROUND]);
 			int haw = mlist[pl][i+1]/10000;
@@ -1246,23 +1170,23 @@ void PlayerStats(int pl) {
       fprintf(of, "<TD ALIGN=\"left\">%s</TD>", ladb[y][k][DB_DATE]);
       fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"":"<I>"), NickOf(L, hid, year), (haw?"":"</I>"));
 			if (k<ngm[y][COMP_LIGA]) {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/%d-%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], year, hid, aid, zi, scr/100, scr%100);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../../reports/%d/%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, scr/100, scr%100);
 			}
 			else if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]) {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/c%d-%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], year, hid, aid, zi, scr/100, scr%100);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../../reports/%d/c%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, scr/100, scr%100);
 			}
 			else if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]+ngm[y][COMP_EURO]) {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/e%d-%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], year, hid, aid, zi, scr/100, scr%100);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../../reports/%d/e%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, scr/100, scr%100);
 			}
 			else {
-	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../reports/%d/n%d-%d-%d.html\">%d-%d</A></TD>", 
-					fxcol[wxl], ny, hid, aid, zi, scr/100, scr%100);
+	      fprintf(of, "<TD BGCOLOR=\"%s\" ALIGN=\"center\"><A HREF=\"../../reports/%d/n%d-%d.html\">%d-%d</A></TD>", 
+					fxcol[wxl], year, hid, aid, scr/100, scr%100);
 			}
 
-		  fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"<I>":""), NickOf(L, aid, year), (haw?"</I>":""));
+      fprintf(of, "<TD ALIGN=\"left\">%s%s%s</TD>", (haw?"<I>":""), NickOf(L, aid, year), (haw?"</I>":""));
 			if (k<ngm[y][COMP_LIGA])
 	      fprintf(of, "<TD ALIGN=\"right\">%d</TD>", rnd);
 			else if (k<ngm[y][COMP_LIGA]+ngm[y][COMP_CUPA]) {
@@ -1321,7 +1245,6 @@ void HTMLHeader(int t) {
     fprintf(of, "<HTML>\n<TITLE>Prezenþe în echipa naþionalã</TITLE>\n");
   fprintf(of, "<HEAD>\n<link href=\"css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(of, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
-  DatatablesHead();
   fprintf(of, "</HEAD>\n<BODY>\n");
 }
 
@@ -1332,8 +1255,7 @@ void HTMLTable(int t) {
   else if (t==TM_NATL)
     fprintf(of, "<H3>Jucãtori adverºi la echipa naþionalã %d-%d</H3>\n", NFY, NLY);
   fprintf(of, "<script src=\"sorttable.js\"></script>\n");
-//  fprintf(of, "<TABLE class=\"sortable\" cellpadding=\"2\" frame=\"box\">\n");
-  fprintf(of, "<TABLE id=\"all\" class=\"display\">\n");
+  fprintf(of, "<TABLE class=\"sortable\" cellpadding=\"2\" frame=\"box\">\n");
   fprintf(of, "<THEAD><TR>\n");
   fprintf(of, "<TH>#</TH>");
   fprintf(of, "<TH>Prenume</TH>");
@@ -1365,9 +1287,8 @@ void HTMLTable(int t) {
     fprintf(of, ">");
     fprintf(of, "<TD align=\"right\">%d.</TD>", i+1);
     fprintf(of, "<TD align=\"left\">%s</TD>", ppren[x]);
-    makeHexlink(x);
-    fprintf(of, "<TD align=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"eurojucatori/%s.html\">%s</A></TD>",
-        pname[x], ppren[x], hexlink, pname[x]);
+    fprintf(of, "<TD align=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"eurojucatori/%03d/%03d.html\">%s</A></TD>",
+        pname[x], ppren[x], x/1000, x%1000, pname[x]);
     CanonicDOB(pdob[x], DOB_DD_MM_YYYY);
 //    fprintf(of, "<TD align=\"right\" sorttable_customkey=\"%d\">%s</TD>", NumericDOB(pdob[x], DOB_YYYYMMDD), pdob[x]);
     fprintf(of, "<TD align=\"center\">%s<IMG SRC=\"../../thumbs/22/3/%s.png\"></IMG></TD>", pcty[x], pcty[x]);

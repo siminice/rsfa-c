@@ -47,27 +47,13 @@ int FY, LY;
 int id[MAX_TEAMS], res[MAX_RR][MAX_TEAMS][MAX_TEAMS], rnd[MAX_RR][MAX_TEAMS][MAX_TEAMS];
 int NC, NT, NK, ppv, tbr, pr1, pr2, rel1, rel2, r, z;
 int hc[MAX_NAMES][MAX_SEASONS];
-int ns[MAX_NAMES], fs[MAX_NAMES], ls[MAX_NAMES], nch[MAX_NAMES], nret[MAX_NAMES];
+int ns[MAX_NAMES], fs[MAX_NAMES], ls[MAX_NAMES], nch[MAX_NAMES];
 int ntm[MAX_SEASONS];
 int champ[MAX_SEASONS], champ_mid[MAX_SEASONS], champ_coach[MAX_SEASONS];
 int num_winter;
 int *start_winter, *end_winter;
 char **club;
 char **mnem;
-
-//---------------------------
-char *hexlink = new char[32];
-void makeHexlink(char *str) {
-  sprintf(hexlink, "%x%x%x%x%x%x",
-    ((unsigned char)str[0]),
-    ((unsigned char)str[1]),
-    ((unsigned char)str[2]),
-    ((unsigned char)str[3]),
-    ((unsigned char)str[4]),
-    ((unsigned char)str[5]));
-  hexlink[12]=0;
-}
-//---------------------------
 
 struct alias {
   int   year;
@@ -496,7 +482,6 @@ void HTMLTable() {
   fprintf(of, "<TH>Primul</TH>");
   fprintf(of, "<TH>Ultimul</TH>");
   fprintf(of, "<TH>Titluri</TH>");
-  fprintf(of, "<TH>Retrogr.</TH>");
   fprintf(of, "<TH>Meciuri</TH>");
   fprintf(of, "<TH>Vict.</TH>");
   fprintf(of, "<TH>Egal.</TH>");
@@ -518,19 +503,15 @@ void HTMLTable() {
     	fprintf(of, ">");
 			fprintf(of, "<TD>%d</TD>", i+1);
 			fprintf(of, "<TD>%s</TD>", p.pren);
-        makeHexlink(p.mnem);
-    	fprintf(of, "<TD ALIGN=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"antrenori/%s.html\">%s</A></TD>",
-          p.name, p.pren, hexlink, p.name);
+    	fprintf(of, "<TD ALIGN=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"antrenori/%03d/%03d.html\">%s</A></TD>",
+        p.name, p.pren, co/1000, co%1000, p.name);
 			fprintf(of, "<TD ALIGN=\"right\">%s</TD>", p.dob);
 			fprintf(of, "<TD>%s<IMG SRC=\"../../thumbs/22/3/%s.png\"></IMG></TD>", p.cty, p.cty);
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ns[co]);
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", fs[co]);
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ls[co]);
 			if (nch[co]>0) {
-  			  fprintf(of, "<TD ALIGN=\"right\"><B>%d</B></TD>", nch[co]);
-			} else { fprintf(of, "<TD></TD>"); }
-			if (nret[co]>0) {
-  			  fprintf(of, "<TD ALIGN=\"right\">%d</TD>", nret[co]);
+			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", nch[co]);
 			} else { fprintf(of, "<TD></TD>"); }
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", ng);
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.win);
@@ -539,7 +520,7 @@ void HTMLTable() {
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.gsc);
 			fprintf(of, "<TD>-</TD>");
 			fprintf(of, "<TD ALIGN=\"right\">%d</TD>", s.gre);
-			fprintf(of, "<TD ALIGN=\"right\">%d%%</TD>", (int)(100*s.pct()));
+			fprintf(of, "<TD ALIGN=\"right\">[%d%%]</TD>", (int)(100*s.pct()));
 			fprintf(of, "</TR>\n");
 		}
 	}
@@ -555,7 +536,7 @@ void HTMLStatLine(FILE *of, int nl, int year, int tm, Stat *s, int bold) {
     fprintf(of, "\n<TR");
     if (nl%2==1) fprintf(of, " BGCOLOR=\"BBFFFF\"");
     fprintf(of, ">");
-		fprintf(of, "<TD><A HREF=\"../a.%d-r1.html\">%s</A></TD>", year, (tm>=0?ssn:""));
+		fprintf(of, "<TD><A HREF=\"../../a.%d-r1.html\">%s</A></TD>", year, (tm>=0?ssn:""));
 		if (bold>0) {
 		fprintf(of, "<TD><B>%s</B></TD>", (tm>=0?NickOf(L, tm, year):"Total"));
 		} else { fprintf(of, "<TD>%s</TD>", (tm>=0?NickOf(L, tm, year):"Total")); };
@@ -572,12 +553,11 @@ void HTMLStatLine(FILE *of, int nl, int year, int tm, Stat *s, int bold) {
 
 void HTMLCoach(int c) {
 	char filename[256];
-	Person p = Ant->P[c];
-    makeHexlink(p.mnem);
-	sprintf(filename, "html/antrenori/%s.html", hexlink);
+	sprintf(filename, "html/antrenori/%03d/%03d.html", c/1000, c%1000);
 	FILE *of = fopen(filename, "wt");
 	if (!of) { perror(filename); return; }
 
+	Person p = Ant->P[c];
 	Stat *total = new Stat();
 	Stat **curr  = new Stat*[5];
 	for (int i=0; i<5; i++) curr[i] = new Stat();
@@ -587,12 +567,12 @@ void HTMLCoach(int c) {
 
 	fprintf(stderr, "%d.%s %s\n", c+1, p.pren, p.name);
   fprintf(of, "<HTML>\n<TITLE>%s %s</TITLE>\n", p.pren, p.name);
-  fprintf(of, "<HEAD>\n<link href=\"../css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
+  fprintf(of, "<HEAD>\n<link href=\"css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(of, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
   fprintf(of, "</HEAD>\n<BODY>\n");
 
   fprintf(of, "<TABLE CELLSPACING=\"10\" CELLPADDING=\"5\">\n<TR>\n<TD>");
-  fprintf(of, "<H3>Antrenor <IMG SRC=\"../../../thumbs/22/3/%s.png\"></IMG> %s %s</H3>\n", p.cty, p.pren, p.name);
+  fprintf(of, "<H3>Antrenor <IMG SRC=\"../../../../thumbs/22/3/%s.png\"></IMG> %s %s</H3>\n", p.cty, p.pren, p.name);
   fprintf(of, "<UL><LI>Data naºterii: %s </LI>\n", p.dob);
   fprintf(of, "<LI>Locul naºterii: %s\n", p.pob);
   if (p.jud!=NULL && p.jud[0]!=0) { fprintf(of, " (%s)", p.jud); }
@@ -703,15 +683,9 @@ void HTMLCoach(int c) {
 	fclose(of);
 }
 
-int main(int argc, char **argv) {
+int main() {
   FY = 1933;
-  LY = 2016;
-  for (int k=1; k<argc; k++) {
-    if (strcmp(argv[k], "-ly")==0 && k<argc-1)  {
-      LY = atoi(argv[++k]);
-    }
-  }
-
+  LY = 2013;
 	Load();
 	Ant = new Catalog();
 	Ant->Load("coaches.dat");

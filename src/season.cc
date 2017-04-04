@@ -13,8 +13,8 @@
 #define AWAY3        9
 #define NUM_ORD      10
 
-#define MAX_N           64
-#define MAX_RR           4
+#define MAX_N        64
+#define MAX_RR        4
 
 #define SPECIAL		50
 #define LOSS_BOTH_0	50
@@ -54,10 +54,10 @@ struct node {
   node(alias*, node*);
   ~node();
 };
-  
+
 struct Aliases {
   node *list;
-  Aliases();   
+  Aliases();
   ~Aliases();
   void Append(alias *a);
   char* GetName(int y);
@@ -67,7 +67,7 @@ struct Aliases {
 //-------------------------------------
 
 alias::alias(int y, char *s, char *n) {
-  year = y;  
+  year = y;
   name = (char*) malloc(strlen(s)+1);
   strcpy(name, s);
   if (n != NULL) {
@@ -81,25 +81,25 @@ alias::~alias() {
   if (name) delete name;
   if (nick) delete nick;
 };
-  
+
 node::node(alias *a, node *n) {
   data = a;
   next = n;
 };
-  
+
 node::~node() {
   if (next) delete next;
   delete data;
 };
-  
+
 
 Aliases::Aliases() {
   list = NULL;
 };
-  
+
 Aliases::~Aliases() {
  delete list;
-} 
+}
 
 void Aliases::Append(alias *a) {
   node *n = (node*) malloc(sizeof(node));
@@ -107,7 +107,7 @@ void Aliases::Append(alias *a) {
   n->next = list;
   list = n;
 };
-  
+
 char* Aliases::GetName(int y) {
   if (!list) return NULL;
   node *n = list;
@@ -119,7 +119,7 @@ char* Aliases::GetName(int y) {
     x = n->data->year;
   }
   return s;
-} 
+}
 
 char* Aliases::GetNick(int y) {
   if (!list) return NULL;
@@ -132,7 +132,7 @@ char* Aliases::GetNick(int y) {
     x = n->data->year;
   }
   return s;
-} 
+}
 
 Aliases **L;
 
@@ -173,7 +173,7 @@ int Load() {
   for (int i=0; i<NC; i++) {
     if (feof(f)) continue;
     fgets(s, 2000, f);
-    if (!s) continue; 
+    if (!s) continue;
     if (strlen(s) < 3) continue;
     s[strlen(s)-1] = 0;
     tok[0] = strtok(s, "*");
@@ -185,7 +185,7 @@ int Load() {
       name = strtok(NULL, "~");
       nick = strtok(NULL, "@");
       int y = atoi(ystr);
-      alias *a = new alias(y, name, nick); 
+      alias *a = new alias(y, name, nick);
       L[i]->Append(a);
 //      printf("Alias (%d,%s~%s) for %d.%s...\n", y, name, (nick!=NULL?nick:""), i, club[i]);
       k++;
@@ -196,16 +196,16 @@ int Load() {
   return 1;
 }
 
-   
+
 char *NameOf(Aliases **L, int t, int y) {
   char *s = L[t]->GetName(y);
-  if (!s) return club[t];   
+  if (!s) return club[t];
   return s;
 }
 
 char *NickOf(Aliases **L, int t, int y) {
   char *s = L[t]->GetNick(y);
-  if (!s) return mnem[t];   
+  if (!s) return mnem[t];
   return s;
 }
 
@@ -227,7 +227,7 @@ int sup(int i, int j, int tbr=0) {
   int p2 = pts[j] - pen[j];
   if (gm1==0 && p1==0 && gm2>0) return 0;
   if (gm2==0 && p2==0 && gm1>0) return 1;
-  if (tbr%NUM_ORD==HEAD_TO_HEAD) {  
+  if (tbr%NUM_ORD==HEAD_TO_HEAD) {
     int p1 = ppv*tbwin[i]+tbdrw[i];
     int p2 = ppv*tbwin[j]+tbdrw[j];
     if (p1 > p2) return 1;
@@ -240,15 +240,19 @@ int sup(int i, int j, int tbr=0) {
     if (tbwin[i] < tbwin[j]) return 0;
     int gs1 = 0;
     int gs2 = 0;
+    int aw1 = 0;
+    int aw2 = 0;
     for (int k=0; k<numr; k++) {
-      if (res[k][i][j] >=0) { gs1 += res[k][i][j]/100; gs2 += res[k][i][j]%100; } 
-      if (res[k][j][i] >=0) { gs1 += res[k][j][i]%100; gs2 += res[k][j][i]/100; } 
+      if (res[k][i][j] >=0) { gs1 += res[k][i][j]/100; gs2 += res[k][i][j]%100; aw2 += res[k][i][j]%100; }
+      if (res[k][j][i] >=0) { gs1 += res[k][j][i]%100; gs2 += res[k][j][i]/100; aw1 += res[k][j][i]%100; }
     }
-    if (gs1 > gs2 ) return 1;
-    if (gs2 > gs1 ) return 0;
+    if (gs1 > gs2) return 1;
+    if (gs2 > gs1) return 0;
+    if (aw1 > aw2) return 1;
+    if (aw2 > aw1) return 0;
     return sup(i, j, 0);
   }
-  else if (tbr%NUM_ORD==RATIO) {  
+  else if (tbr%NUM_ORD==RATIO) {
     int p1 = ppv*win[i]+drw[i];
     int p2 = ppv*win[j]+drw[j];
     if (p1 > p2) return 1;
@@ -274,7 +278,7 @@ int sup(int i, int j, int tbr=0) {
     if (p1 < p2) return 0;
     if (gsc[i] - gre[i] > gsc[j] - gre[j]) return 1;
     if (gsc[i] - gre[i] < gsc[j] - gre[j]) return 0;
-    if (gsc[i] > gsc[j]) return 1;   
+    if (gsc[i] > gsc[j]) return 1;
     if (gsc[i] < gsc[j]) return 0;
     if (win[i] > win[j]) return 1;
     if (win[i] < win[j]) return 0;
@@ -282,7 +286,7 @@ int sup(int i, int j, int tbr=0) {
     return 1;
   }
 }
-  
+
 void Tiebreak(int h, int k) {
   for (int i=h; i<=k; i++) {
     int j = rank[i];
@@ -309,11 +313,11 @@ void Tiebreak(int h, int k) {
     }
   }
 
-  int sorted; 
+  int sorted;
   do {
     sorted = 1;
     for (int i=h; i<k; i++)
-      if (sup(tbrk[i+1], tbrk[i], (tbr%NUM_ORD!=RATIO ? gm>=(k-h+1)*(k-h) : RATIO))) {  
+      if (sup(tbrk[i+1], tbrk[i], (tbr%NUM_ORD!=RATIO ? gm>=(k-h+1)*(k-h) : RATIO))) {
         sorted = 0;
         int aux = tbrk[i];
         tbrk[i] = tbrk[i+1];
@@ -323,7 +327,7 @@ void Tiebreak(int h, int k) {
   for (int i=h; i<=k; i++)
     rank[i] = tbrk[i];
 }
-    
+
 
 void Ranking() {
   // BubbleSort
@@ -363,7 +367,7 @@ void Ranking() {
     while (i<n-1) {
       j = i;
       while (j+1<n && (pts[rank[j+1]]-pen[rank[j+1]] == pts[rank[i]]-pen[rank[i]])) j++;
-      if (j>i) Tiebreak(i,j);  
+      if (j>i) Tiebreak(i,j);
       i = j+1;
     }
   }
@@ -387,7 +391,7 @@ void Listing() {
     }
     else {
      printf("%2d.%-30s%2d%3d%3d%3d%4d%c%-3d", grnk,
-     NameOf(L,id[x],year), win[x]+drw[x]+los[x], 
+     NameOf(L,id[x],year), win[x]+drw[x]+los[x],
      win[x], drw[x], los[x], gsc[x], (tbr%10!=RATIO?'-':':'), gre[x]);
      if (tbr%10==RATIO) printf(" %4.3f ", (gre[x]>0?((double)gsc[x])/((double)gre[x]):gsc[x]));
      if (pen[x]>0 && after(pdt[x],lastr)) printf("%4d (-%dp pen)" , pts[x]-pen[x], pen[x]);
@@ -396,17 +400,17 @@ void Listing() {
      printf(" %s\n", sdsc);
     }
     if (NG==0) {
-     if (i==pr1-1) 
+     if (i==pr1-1)
         printf("%s\n", sep1);
-     if (i==pr1+pr2-1 && pr2>0) 
+     if (i==pr1+pr2-1 && pr2>0)
         printf("%s\n", sep2);
-     if (i==n-(rel1+rel2)-1 && rel2>0) 
+     if (i==n-(rel1+rel2)-1 && rel2>0)
         printf("%s\n", sep2);
      if (i==n-rel1-1 && rel1>0)
         printf("%s\n", sep1);
     }
     else if (NG>1) {
-     if (i%((n+NG-1)/NG)==pr1/NG-1) 
+     if (i%((n+NG-1)/NG)==pr1/NG-1)
         printf("%s\n", sep1);
     }
 
@@ -439,18 +443,18 @@ int AddResult(int a, int b, int x, int y) {
     if (x-y>=2) pts[a]++;
     if (y-x>=2) pts[b]++;
   }
-  if (x>y) { 
-    win[a]++; los[b]++; pts[a] += ppv; 
+  if (x>y) {
+    win[a]++; los[b]++; pts[a] += ppv;
   }
-  else if (x==y) { 
-    drw[a]++; drw[b]++; pts[a]++; pts[b]++; 
+  else if (x==y) {
+    drw[a]++; drw[b]++; pts[a]++; pts[b]++;
     if (tbr==DRAW10 && drw[a]>10) pts[a]--;
     if (tbr==DRAW10 && drw[b]>10) pts[b]--;
     if (tbr==DRAW8 && drw[a]>8) pts[a]--;
     if (tbr==DRAW8 && drw[b]>8) pts[b]--;
   }
-  else { 
-    los[a]++; win[b]++; pts[b] += ppv; 
+  else {
+    los[a]++; win[b]++; pts[b] += ppv;
     if (tbr%NUM_ORD==AWAY3) pts[b]++;
   }
 //  printf("%-15s%d-%d %s\n", mnem[id[a]], x, y, mnem[id[b]]);
@@ -466,7 +470,7 @@ int LoadFile(char *filename) {
   // Loading file
   char s[500], *tok[12];
   fscanf(f, "%d %d %d %d %d %d %d\n", &n, &ppv, &tbr, &pr1, &pr2, &rel1, &rel2);
-  numr = tbr/NUM_ORD + 1; 
+  numr = tbr/NUM_ORD + 1;
   for (i=0; i<n; i++) {
     fgets(s, 200, f);
     tok[0] = strtok(s, " ");
@@ -579,7 +583,7 @@ void DisplayData(int full, bool winter, int fd, int ld) {
             printf("[%s %d]\n", month[r/50], d%50);
           }
           AddResult(i, j, allres[k][i][j]/100, allres[k][i][j]%100);
-          printf("%-15s%d-%d %s\n", NickOf(L, id[i], year), allres[k][i][j]/100, 
+          printf("%-15s%d-%d %s\n", NickOf(L, id[i], year), allres[k][i][j]/100,
                   allres[k][i][j]%100, NickOf(L, id[j], year));
           ng++;
         }
@@ -622,12 +626,12 @@ void DisplayData(int full, bool winter, int fd, int ld) {
 
 int main(int argc, char* argv[]) {
   if (!Load()) {
-    printf("ERROR: called from invalid drectory.\n"); 
-    return -1;     
+    printf("ERROR: called from invalid drectory.\n");
+    return -1;
   }
-  if (argc < 2) { 
-    printf("ERROR: No input file specified.\n"); 
-    return -1; 
+  if (argc < 2) {
+    printf("ERROR: No input file specified.\n");
+    return -1;
   }
   if (!LoadFile(argv[1])) {
     printf("ERROR: file %s not found.\n", argv[1]);
@@ -643,7 +647,7 @@ int main(int argc, char* argv[]) {
   NG = 0;
   decorate = 1;
   if (argc > 2) {
-    int i=2; 
+    int i=2;
     do {
       if (strcmp(argv[i],"-")==0) full = false;
       else if (argv[i][0] == '-') {

@@ -307,20 +307,6 @@ int *nmeci, *ntit, *nrez, *ngol;
 int *tmeci, *ttit, *trez, *tgol;
 int *rank;
 
-//---------------------------
-char *hexlink = new char[32];
-void makeHexlink(int i) {
-  sprintf(hexlink, "%x%x%x%x%x%x",
-    ((unsigned char)pmnem[i][0]),
-    ((unsigned char)pmnem[i][1]),
-    ((unsigned char)pmnem[i][2]),
-    ((unsigned char)pmnem[i][3]),
-    ((unsigned char)pmnem[i][4]),
-    ((unsigned char)pmnem[i][5]));
-  hexlink[12]=0;
-}
-//---------------------------
-
 int borna[256];
 
 char ofilename[128];
@@ -553,9 +539,9 @@ void Collect(int year) {
         db[n][i][k] = new char[l+1];
         strcpy(db[n][i][k], tok[k]);
       }
-    }
+    }    
     i++;
-//    db[n][i] = NULL;
+    db[n][i] = NULL;
 
     s[0] = 0;
   } while (!feof(f));
@@ -590,9 +576,10 @@ void CollectCup(int year) {
         kdb[n][i][k] = new char[l+1];
         strcpy(kdb[n][i][k], tok[k]);
       }
-    }
+    }    
     i++;
-//    kdb[n][i] = NULL;
+    kdb[n][i] = NULL;
+
     s[0] = 0;
   } while (!feof(f));
   fclose(f);
@@ -609,12 +596,12 @@ void CollectEC(int year) {
     fprintf(stderr, "ERROR: Cannot open file %s.\n", filename);
     return;
   }
-
+  
   int i = 0;
   int n = year - ECFY;
   do {
     fgets(s, 1000, f);
-    if (feof(f) || strlen(s)<10) continue;
+    if (strlen(s)<10) continue;
     tok[0] = strtok(s, ",\n");
     for (int k=1; k<TD_NUM; k++) tok[k] = strtok(NULL, ",\n");
 
@@ -626,9 +613,11 @@ void CollectEC(int year) {
         edb[n][i][k] = new char[l+1];
         strcpy(edb[n][i][k], tok[k]);
       }
-    }
+    }    
     i++;
-//    edb[n][i] = NULL;
+    edb[n][i] = NULL;
+
+    s[0] = 0;
   } while (!feof(f));
   fclose(f);
 }
@@ -661,9 +650,10 @@ void CollectNat(int year) {
         ndb[n][i][k] = new char[l+1];
         strcpy(ndb[n][i][k], tok[k]);
       }
-    }
+    }    
     i++;
     ndb[n][i] = NULL;
+
     s[0] = 0;
   } while (!feof(f));
   fclose(f);
@@ -828,7 +818,7 @@ void Ranking(int cr) {
 }
 
 void HTMLHeader() {  
-  fprintf(of, "<HTML>\n<TITLE>Jucãtori în Prima Divizie, Cupa României, Cupele Europene, Echipa Naþionalã</TITLE>\n");
+  fprintf(of, "<HTML>\n<TITLE>Jucãtori în Prima Divizie, Cupa României, Cupele Europene, Echipa Naþionalã</TITLE>\n", FY, LY);
   fprintf(of, "<HEAD>\n<link href=\"css/seasons.css\" rel=\"stylesheet\" type=\"text/css\"/>\n");
   fprintf(of, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-2\">\n");
   fprintf(of, "</HEAD>\n<BODY>\n");
@@ -876,9 +866,8 @@ void HTMLTable() {
     fprintf(of, ">");
     fprintf(of, "<TD align=\"right\">%d.</TD>", i+1);
     fprintf(of, "<TD align=\"left\">%s</TD>", ppren[x]);
-    makeHexlink(x);
-    fprintf(of, "<TD align=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"jucatori/%s.html\">%s</A></TD>",
-        pname[x], ppren[x], hexlink, pname[x]);
+    fprintf(of, "<TD align=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"jucatori/%03d/%03d.html\">%s</A></TD>",
+        pname[x], ppren[x], x/1000, x%1000, pname[x]);
     CanonicDOB(pdob[x], DOB_DD_MM_YYYY);
     fprintf(of, "<TD align=\"right\" sorttable_customkey=\"%d\">%s</TD>", NumericDOB(pdob[x], DOB_YYYYMMDD), pdob[x]);
     fprintf(of, "<TD align=\"center\">%s<IMG SRC=\"../../thumbs/22/3/%s.png\"></IMG></TD>", pcty[x], pcty[x]);
@@ -907,10 +896,10 @@ void HTMLFooter() {
 int main(int argc, char **argv) {
 
   verbosity = 2;
-  FY   = 1933; LY   = 2017;
-  KFY  = 1934; KLY  = 2017;
-  ECFY = 1957; ECLY = 2017;
-  NFY  = 1922; NLY  = 2017;
+  FY   = 1933; LY   = 2013;
+  KFY  = 1934; KLY  = 2013;
+  ECFY = 1957; ECLY = 2014;
+  NFY  = 1922; NLY  = 2013;
   tm = -1;
   pl = 0;
   cr = CR_M;
@@ -947,28 +936,24 @@ int main(int argc, char **argv) {
   db = new char***[nums];
   for (int s=0; s<nums; s++) {
      db[s] = new char**[MAX_DB];
-     for (int i=0; i<MAX_DB; i++) db[s][i] = NULL;
   }
 
   int numks = KLY-KFY+1;
   kdb = new char***[numks];
   for (int s=0; s<numks; s++) {
      kdb[s] = new char**[MAX_KDB];
-     for (int i=0; i<MAX_KDB; i++) kdb[s][i] = NULL;
   }
 
   int numecs = ECLY-ECFY+1;
   edb = new char***[numecs];
   for (int s=0; s<numecs; s++) {
      edb[s] = new char**[MAX_EDB];
-     for (int i=0; i<MAX_EDB; i++) edb[s][i] = NULL;
   }
 
   int numns = NLY-NFY+1;
   ndb = new char***[numns];
   for (int s=0; s<numns; s++) {
      ndb[s] = new char**[MAX_NDB];
-     for (int i=0; i<MAX_NDB; i++) ndb[s][i] = NULL;
   }
 
   pdb = new char**[MAX_PSZ];

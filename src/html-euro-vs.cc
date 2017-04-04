@@ -119,7 +119,7 @@ int GetYear(char *sd) {
   if (!sd) return -1;
   if (strlen(sd)<10) return -1;
   char sy[16];
-  strncpy(sy, sd+6, 4);
+  strncpy(sy, sd, 4);
   sy[4] = 0;
   int y = strtol(sy, NULL, 10);
   return y;
@@ -458,13 +458,13 @@ int Gkid(int t, int m) {
 */
 
 #define DOB_DD_MM_YYYY  0
-#define DOB_YYYYMMDD  1
+#define DOB_YYYY_MM_DD  1
 int NumericDOB(char *dob, int fmt) {
   char s[12];
   strcpy(s, dob);
-  char *sd = strtok(s, "/.-");
+  char *sy = strtok(s, "/.-");
   char *sm = strtok(NULL, "/.-");
-  char *sy = strtok(NULL, "/.-");
+  char *sd = strtok(NULL, "/.-");
   int xd = 0;
   if (sd!=NULL) xd = atoi(sd);
   int xm = 0;
@@ -484,9 +484,9 @@ int NumericDOB(char *dob, int fmt) {
 void CanonicDOB(char *dob, int fmt) {
   char s[12];
   strcpy(s, dob);
-  char *sd = strtok(s, "/.-");
+  char *sy = strtok(s, "/.-");
   char *sm = strtok(NULL, "/.-");
-  char *sy = strtok(NULL, "/.-");
+  char *sd = strtok(NULL, "/.-");
   int xd = 0;
   if (sd!=NULL) xd = atoi(sd);
   int xm = 0;
@@ -501,10 +501,10 @@ void CanonicDOB(char *dob, int fmt) {
   }
   if (xy>0 && xy<100) xy = 1900+xy;
   if (fmt==DOB_DD_MM_YYYY) {
-    sprintf(dob, "%02d/%02d/%04d", xd, xm, xy);
+    sprintf(dob, "%02d-%02d-%04d", xd, xm, xy);
   }
-  else if (fmt==DOB_YYYYMMDD) {
-    sprintf(dob, "%04d%02d%02d", xy, xm, xd);
+  else if (fmt==DOB_YYYY_MM_DD) {
+    sprintf(dob, "%04d-%02d-%02d", xy, xm, xd);
   }
 }
 
@@ -628,8 +628,8 @@ void HTMLPlayerStatsTable() {
     makeHexlink(Pl->P[x].mnem);
     fprintf(of, "<TD align=\"left\" sorttable_customkey=\"%s,%s\"><A HREF=\"../jucatori/%s.html\">%s</A></TD>",
         Pl->P[x].name, Pl->P[x].pren, hexlink, Pl->P[x].name);
-    CanonicDOB(Pl->P[x].dob, DOB_DD_MM_YYYY);
-    fprintf(of, "<TD align=\"right\" sorttable_customkey=\"%d\">%s</TD>", NumericDOB(Pl->P[x].dob, DOB_YYYYMMDD), Pl->P[x].dob);
+    CanonicDOB(Pl->P[x].dob, DOB_YYYY_MM_DD);
+    fprintf(of, "<TD align=\"right\" sorttable_customkey=\"%d\">%s</TD>", NumericDOB(Pl->P[x].dob, DOB_YYYY_MM_DD), Pl->P[x].dob);
     fprintf(of, "<TD align=\"center\">%s<IMG SRC=\"../../../thumbs/22/3/%s.png\"></IMG></TD>", Pl->P[x].cty, Pl->P[x].cty);
     fprintf(of, "<TD align=\"right\">%d</TD>", psez[x]);
     fprintf(of, "<TD align=\"right\">%d</TD>", pfy[x]);

@@ -296,10 +296,10 @@ int main(int argc, char* argv[]) {
     else if (strcmp(argv[j], "-q")==0) quiet = 1;
     else if (strcmp(argv[j], "-p")==0) pause = 1;
     else if (strcmp(argv[j], "+")==0) pause = 1;
-    if (strcmp(argv[j], "-fy")==0 || strcmp(argv[j], "-f")==0) {
+    if (strcmp(argv[j], "-fd")==0) {
       if (j+1<argc) fd = atoi(argv[j+1]);
     }
-    if (strcmp(argv[j], "-ly")==0 || strcmp(argv[j], "-l")==0) {
+    if (strcmp(argv[j], "-ld")==0) { 
       if (j+1<argc) ld = atoi(argv[j+1]);
     }
   }

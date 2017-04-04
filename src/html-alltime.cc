@@ -426,10 +426,10 @@ int main(int argc, char* argv[]) {
   afd = ld = 3000;
 
   for (int k=1; k<argc; k++) {
-    if (strcmp(argv[k], "-fy")==0 || strcmp(argv[k], "-f")==0) {
+    if (strcmp(argv[k], "-fd")==0) {
       if (k+1<argc) fd = atoi(argv[k+1]);
     }
-    if (strcmp(argv[k], "-ly")==0 || strcmp(argv[k], "-l")==0) {
+    if (strcmp(argv[k], "-ld")==0) {
       if (k+1<argc) ld = atoi(argv[k+1]);
     }
   }

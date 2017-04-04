@@ -227,8 +227,8 @@ void FinalTables() {
   char s[256], *tk[20];
   do {
     fgets(s, 200, stdin);
-    tk[0] = strtok(s, " \t\n");
-    for (int l=1; l<20; l++) tk[l] = strtok(NULL, " -\t\n");
+    tk[0] = strtok(s, " -()\t\n");
+    for (int l=1; l<20; l++) tk[l] = strtok(NULL, " -()\t\n");
     int k = 19;
     while (k>=0 && tk[k]==NULL) k--;
     int h = 1;
