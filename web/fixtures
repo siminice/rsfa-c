@@ -1,0 +1,5 @@
+#!/bin/csh
+
+./get-daily.sh $1
+./daily html-daily/$1.html 
+chmod a+x today

@@ -1,0 +1,333 @@
+73
+#Albania|albania|alb
+a:Superliga
+b:1st Division
+c1:2nd Division|Group A
+c2:2nd Division|Group B
+#Andorra|andorra|and
+a:1a Divisió
+b:2a Divisió
+#Argentina|argentina|arg
+a:Primera División
+b:Prim B Nacional
+$Armenia|armenia|arm
+a:Premier League
+b:First League
+$Australia|australia|aus
+a:A-League
+#Austria|austria|aut
+a:Bundesliga
+b:1. Liga
+c1:Regionalliga|West
+c2:Regionalliga|Mitte
+c3:Regionalliga|Ost
+#Azerbaijan|azerbaijan|aze
+a:Premyer Liqa
+b:Birinci Dasta
+$Belarus|belarus|blr
+a:Premier League
+b:1. Division
+c:2. Division
+#Belgium|belgium|bel
+a:First Division A
+b:First Division B
+c:First Amateur Division
+#Bolivia|bolivia|bol
+a:LFPB
+b:Nacional B
+#Bosnia and Herzegovina|bosnia-herzegovina|bos
+a:Premier Liga
+b1:1st League|RS
+b2:1st League|FBiH
+$Brazil|brazil|bra
+a:Serie A
+b:Serie B
+c:Serie C
+$Brazil|brazil|sao
+a:Paulista A1
+$Brazil|brazil|rio
+a:Carioca 1
+$Brazil|brazil|gau
+a:Gaucho 1
+#Bulgaria|bulgaria|bul
+a:First League
+b:Second League
+c1:Third League|North-East
+c2:Third League|North-West
+c3:Third League|South-East
+c4:Third League|South-West
+$Chile|chile|chi
+a:Primera División
+b:Primera B
+$China PR|china|chn
+a:CSL
+$Colombia|colombia|col
+a:Primera A
+b:Primera B
+#Croatia|croatia|cro
+a:1. HNL
+b:2. HNL
+c1:3. HNL|West
+c2:3. HNL|East
+c3:3. HNL|South
+#Cyprus|cyprus|cyp
+a:1. Division
+b:2. Division
+c:3. Division
+#Czech Republic|czech-republic|cze
+a:Czech Liga
+b:FNL
+c1:3. liga|ČFL
+c2:3. liga|MSFL
+#Denmark|denmark|den
+a:Superliga
+b:1st Division
+c1:2nd Division|Group 1
+c2:2nd Division|Group 2
+c2:2nd Division|Group 3
+$Ecuador|ecuador|ecu
+a:Primera A
+b:Primera B
+#England|england|eng
+a:Premier League
+b:Championship
+c:League One
+d:League Two
+e:Conference National
+f1:Conference N / S|North
+f2:Conference N / S|South
+g1:Non League Premier|Isthmian
+g2:Non League Premier|Northern
+g3:Non League Premier|Southern
+$Estonia|estonia|est
+a:Meistriliiga
+b:Esiliiga A
+c:Esiliiga B
+$Faroe Islands|faeroe|fae
+a:Meistaradeildin
+b:1. Deild
+c:2. Deild
+$Finland|finland|fin
+a:Veikkausliiga
+b:Ykkönen
+c1:Kakkonen|Group A
+c2:Kakkonen|Group B
+c3:Kakkonen|Group C
+#France|france|fra
+a:Ligue 1
+b:Ligue 2
+c:National
+d1:CFA|Group A
+d2:CFA|Group B
+d3:CFA|Group C
+d4:CFA|Group D
+#Georgia|georgia|geo
+a:Erovnuli Liga
+b:Erovnuli Liga 2 Liga
+c:Liga 3
+#Germany|germany|ger
+a:Bundesliga
+b:2. Bundesliga
+c:3. Liga
+d1:Regionalliga|Nord
+d2:Regionalliga|Nordost
+d3:Regionalliga|West
+d4:Regionalliga|Südwest
+d5:Regionalliga|Bayern
+#Gibraltar|gibraltar|gib
+a:Premier Division
+#Greece|greece|gre
+a:Super League
+b:Football League
+c1:Gamma Ethniki|Group 1
+c2:Gamma Ethniki|Group 2
+c3:Gamma Ethniki|Group 3
+c4:Gamma Ethniki|Group 4
+#Hungary|hungary|hun
+a:NB I
+b:NB II
+c1:NB III|Közép
+c2:NB III|Keleti
+c3:NB III|Nyugati
+$Iceland|iceland|isl
+a:Úrvalsdeild
+b:1. Deild
+c:2. Deild
+d:3. Deild
+$Republic of Ireland|ireland-republic|irl
+a:Premier Division
+b:First Division
+#Israel|israel|isr
+a:Ligat ha'Al
+b:Liga Leumit
+#Italy|italy|ita
+a:Serie A
+b:Serie B
+c1:Lega Pro|Girone A
+c2:Lega Pro|Girone B
+c3:Lega Pro|Girone C
+$Japan|japan|jap
+a:J1 League
+b:J2 League
+$Kazakhstan|kazakhstan|kaz
+a:Premier League
+b:1. Division
+$Korea Republic|korea|kor
+a:K League Classic
+#Kosovo|kosovo|kos
+a:Superliga
+$Latvia|latvia|lat
+a:Virsliga
+b:1. Liga
+$Lithuania|lithuania|lit
+a:A Lyga
+b:1 Lyga
+#Luxembourg|luxembourg|lux
+a:National Division
+b:Promotion d'Honneur
+c1:1. Division|Serie 1
+c2:1. Division|Serie 2
+#FYR Macedonia|macedonia-fyr|mac
+a:First League
+b:Second League
+#Malta|malta|mal
+a:Premier League
+b:First Division
+c:Second Division
+#Mexico|mexico|mex
+a:Liga MX
+#Moldova|moldova|mol
+a:Divizia Națională
+b:Divizia A
+c1:Diviza B|North
+c2:Diviza B|South
+#Montenegro|montenegro|mnt
+a:First League
+b:Second League
+#Netherlands|netherlands|ned
+a:Eredivisie
+b:Eerste Divisie
+c:Tweede Divisie
+c1:Derde Divisie|Zaterdag
+c2:Derde Divisie|Zondag
+#Northern Ireland|northern-ireland|nir
+a:Premiership
+b:Championship
+c:Premier Intermediate
+$Norway|norway|nor
+a:Eliteserien
+b:1. Division
+c1:2. Division|Group 1
+c2:2. Division|Group 2
+c3:2. Division|Group 3
+c4:2. Division|Group 4
+$Paraguay|paraguay|par
+a:Division Profesional
+b:Division Intermedia
+$Peru|peru|per
+a:Primera División
+b:Segunda División
+#Poland|poland|pol
+a:Ekstraklasa
+b:I Liga
+c:II Liga
+#Portugal|portugal|por
+a:Primeira Liga
+b:Segunda Liga
+c1:Campeonato de Portugal Prio|Group A
+c2:Campeonato de Portugal Prio|Group B
+c3:Campeonato de Portugal Prio|Group C
+c4:Campeonato de Portugal Prio|Group D
+c5:Campeonato de Portugal Prio|Group E
+c6:Campeonato de Portugal Prio|Group F
+c7:Campeonato de Portugal Prio|Group G
+c8:Campeonato de Portugal Prio|Group H
+#Romania|romania|rom
+a:Liga I
+b1:Liga II
+c1:Liga III|Serie 1
+c2:Liga III|Serie 2
+c3:Liga III|Serie 3
+c4:Liga III|Serie 4
+c5:Liga III|Serie 5
+#Russia|russia|rus
+a:Premier League
+b:FNL
+c1:2. Division|West
+c2:2. Division|Center
+c3:2. Division|South
+c4:2. Division|Ural-Povolzhye
+c5:2. Division|East
+#San Marino|san-marino|rsm
+a:Campionato
+#Scotland|scotland|sco
+a:Premiership
+b:Championship
+c:League One
+d:League Two
+#Serbia|serbia|yug
+a:Super Liga
+b:Prva Liga
+c1:Srpska Liga|Belgrade
+c2:Srpska Liga|West
+c3:Srpska Liga|Vojvodina
+c4:Srpska Liga|East
+#Slovakia|slovakia|svk
+a:Super Liga
+b1:2. liga|West
+b2:2. liga|East
+c1:3. liga|Center
+c2:3. liga|East
+c3:3. liga|West
+c4:3. liga|Bratislava
+#Slovenia|slovenia|slo
+a:1. SNL
+b:2. SNL
+c1:3. SNL|Center
+c2:3. SNL|East
+c3:3. SNL|North
+c4:3. SNL|West
+#Spain|spain|spa
+a:Primera División
+b:Segunda División
+c1:Segunda B|Group 1
+c2:Segunda B|Group 2
+c3:Segunda B|Group 3
+c4:Segunda B|Group 4
+$Sweden|sweden|swe
+a:Allsvenskan
+b:Superettan
+c1:Division 1|Norra
+c2:Division 1|Södra
+#Switzerland|switzerland|sui
+a:Super League
+b:Challenge League
+c:1. Liga Promotion
+d1:1. Liga Classic|Group 1
+d2:1. Liga Classic|Group 2
+d3:1. Liga Classic|Group 3
+#Turkey|turkey|tur
+a:Süper Lig
+b:1. Lig
+c1:2. Lig|Beyaz
+c2:2. Lig|Kırmızı
+d1:3. Lig|Group 1
+d2:3. Lig|Group 2
+d3:3. Lig|Group 3
+#Ukraine|ukraine|ukr
+a:Premier League
+b:Persha Liga
+c:Druha Liga
+#Uruguay|uruguay|uru
+a:Primera División
+b:Segunda División
+$USA|united-states|usa
+a:MLS
+#Venezuela|venezuela|ven
+a:Primera División
+b:Segunda División
+#Wales|wales|wal
+a:Premier League
+b1:Feeder Leagues|Cymru Alliance
+b2:Feeder Leagues|Welsh League Division 1
+#~|~|~
