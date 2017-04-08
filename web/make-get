@@ -1,0 +1,19 @@
+#!/bin/bash
+
+SW="http://www.soccerway.com"
+DIR="/home/radu/rsssf/sat/web"
+COUNTRY=$1
+SEASON=$2
+
+echo '#!/bin/bash'
+echo ''
+
+while read line
+do
+ read -a arr <<< ${line}
+ URL="${SW}/national/${arr[0]}/${arr[1]}/${SEASON}/${arr[2]}/"
+ REDIRECT=$(get-redirect ${URL})
+ echo 'echo "'"${COUNTRY}"': '"${arr[3]}"'"'
+ echo "curl -s --get ${SW}${REDIRECT}matches/ > ${DIR}/${COUNTRY}/${arr[3]}.html"
+ echo ''
+done < cfg/${COUNTRY}
