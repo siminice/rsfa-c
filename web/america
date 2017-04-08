@@ -1,0 +1,22 @@
+#!/bin/bash
+
+cd /home/radu/rsssf/sat/web
+
+./u-argentina
+./u-bolivia
+./u-brazil
+./u-chile
+./u-colombia
+./u-ecuador
+./u-paraguay
+./u-peru
+./u-uruguay
+./u-venezuela
+
+./u-japan
+./u-china
+./u-korea
+
+./u-australia
+./u-mexico
+./u-united-states
