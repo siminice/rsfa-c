@@ -1,0 +1,42 @@
+#!/bin/bash
+
+YEAR=2017
+FALL=20162017
+
+cd /home/radu/rsssf/sat/web
+
+echo 'make-get arg '${FALL}' > get-argentina'
+make-get arg ${FALL} > get-argentina
+echo 'make-get bol '${FALL}' > get-bolivia'
+make-get bol ${FALL} > get-bolivia
+echo 'make-get bra '${YEAR}' > get-brazil'
+make-get bra ${YEAR} > get-brazil
+echo 'make-get chi '${FALL}' > get-chile'
+make-get chi ${FALL} > get-chile
+echo 'make-get col '${YEAR}' > get-colombia'
+make-get col ${YEAR} > get-colombia
+echo 'make-get ecu '${YEAR}' > get-ecuador'
+make-get ecu ${YEAR} > get-ecuador
+echo 'make-get par '${YEAR}' > get-paraguay'
+make-get par ${YEAR} > get-paraguay
+echo 'make-get per '${YEAR}' > get-peru'
+make-get per ${YEAR} > get-peru
+echo 'make-get uru '${YEAR}' > get-uruguay'
+make-get uru ${YEAR} > get-uruguay
+echo 'make-get ven '${YEAR}' > get-venezuela'
+make-get ven ${YEAR} > get-venezuela
+
+echo 'make-get jap '${YEAR}' > get-japan'
+make-get jap ${YEAR} > get-japan
+echo 'make-get chn '${YEAR}' > get-china'
+make-get chn ${YEAR} > get-china
+echo 'make-get kor '${YEAR}' > get-korea'
+make-get kor ${YEAR} > get-korea
+
+echo 'make-get aus '${FALL}' > get-australia'
+make-get aus ${FALL} > get-australia
+echo 'make-get mex '${FALL}' > get-mexico'
+make-get mex ${FALL} > get-mexico
+echo 'make-get usa '${YEAR}' > get-united-states'
+make-get usa ${YEAR} > get-united-states
+

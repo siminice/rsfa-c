@@ -1,0 +1,92 @@
+#!/bin/bash'
+
+YEAR=${1:-20162017}
+
+cd /home/radu/rsssf/sat/web
+
+#echo 'make-get alb '${YEAR}' > get-albania'
+#make-get alb ${YEAR} > get-albania
+echo 'make-get and '${YEAR}' > get-andorra'
+make-get and ${YEAR} > get-andorra
+echo 'make-get arm '${YEAR}' > get-armenia'
+make-get arm ${YEAR} > get-armenia
+echo 'make-get aut '${YEAR}' > get-austria'
+make-get aut ${YEAR} > get-austria
+echo 'make-get aze '${YEAR}' > get-azerbaijan'
+make-get aze ${YEAR} > get-azerbaijan
+echo 'make-get bel '${YEAR}' > get-belgium'
+make-get bel ${YEAR} > get-belgium
+echo 'make-get bos '${YEAR}' > get-bosnia-herzegovina'
+make-get bos ${YEAR} > get-bosnia-herzegovina
+echo 'make-get bul '${YEAR}' > get-bulgaria'
+make-get bul ${YEAR} > get-bulgaria
+echo 'make-get cro '${YEAR}' > get-croatia'
+make-get cro ${YEAR} > get-croatia
+echo 'make-get cyp '${YEAR}' > get-cyprus'
+make-get cyp ${YEAR} > get-cyprus
+echo 'make-get cze '${YEAR}' > get-czech-republic'
+make-get cze ${YEAR} > get-czech-republic
+echo 'make-get den '${YEAR}' > get-denmark'
+make-get den ${YEAR} > get-denmark
+echo 'make-get eng '${YEAR}' > get-england'
+make-get eng ${YEAR} > get-england
+echo 'make-get fra '${YEAR}' > get-france'
+make-get fra ${YEAR} > get-france
+echo 'make-get geo '${YEAR}' > get-georgia'
+make-get geo ${YEAR} > get-georgia
+echo 'make-get ger '${YEAR}' > get-germany'
+make-get ger ${YEAR} > get-germany
+echo 'make-get gib '${YEAR}' > get-gibraltar'
+make-get gib ${YEAR} > get-gibraltar
+echo 'make-get gre '${YEAR}' > get-greece'
+make-get gre ${YEAR} > get-greece
+echo 'make-get hun '${YEAR}' > get-hungary'
+make-get hun ${YEAR} > get-hungary
+echo 'make-get isr '${YEAR}' > get-israel'
+make-get isr ${YEAR} > get-israel
+echo 'make-get ita '${YEAR}' > get-italy'
+make-get ita ${YEAR} > get-italy
+echo 'make-get kos '${YEAR}' > get-kosovo'
+make-get kos ${YEAR} > get-kosovo
+echo 'make-get lux '${YEAR}' > get-luxembourg'
+make-get lux ${YEAR} > get-luxembourg
+echo 'make-get mac '${YEAR}' > get-macedonia-fyr'
+make-get mac ${YEAR} > get-macedonia-fyr
+echo 'make-get mal '${YEAR}' > get-malta'
+make-get mal ${YEAR} > get-malta
+echo 'make-get mol '${YEAR}' > get-moldova'
+make-get mol ${YEAR} > get-moldova
+echo 'make-get mnt '${YEAR}' > get-montenegro'
+make-get mnt ${YEAR} > get-montenegro
+echo 'make-get ned '${YEAR}' > get-netherlands'
+make-get ned ${YEAR} > get-netherlands
+echo 'make-get nor '${YEAR}' > get-northern-ireland'
+make-get nor ${YEAR} > get-northern-ireland
+echo 'make-get pol '${YEAR}' > get-poland'
+make-get pol ${YEAR} > get-poland
+echo 'make-get por '${YEAR}' > get-portugal'
+make-get por ${YEAR} > get-portugal
+echo 'make-get rom '${YEAR}' > get-romania'
+make-get rom ${YEAR} > get-romania
+echo 'make-get rus '${YEAR}' > get-russia'
+make-get rus ${YEAR} > get-russia
+echo 'make-get rsm '${YEAR}' > get-san-marino'
+make-get rsm ${YEAR} > get-san-marino
+echo 'make-get sco '${YEAR}' > get-scotland'
+make-get sco ${YEAR} > get-scotland
+echo 'make-get yug '${YEAR}' > get-serbia'
+make-get yug ${YEAR} > get-serbia
+echo 'make-get svk '${YEAR}' > get-slovakia'
+make-get svk ${YEAR} > get-slovakia
+echo 'make-get slo '${YEAR}' > get-slovenia'
+make-get slo ${YEAR} > get-slovenia
+echo 'make-get spa '${YEAR}' > get-spain'
+make-get spa ${YEAR} > get-spain
+echo 'make-get sui '${YEAR}' > get-switzerland'
+make-get sui ${YEAR} > get-switzerland
+echo 'make-get tur '${YEAR}' > get-turkey'
+make-get tur ${YEAR} > get-turkey
+echo 'make-get ukr '${YEAR}' > get-ukraine'
+make-get ukr ${YEAR} > get-ukraine
+echo 'make-get wal '${YEAR}' > get-wales'
+make-get wal ${YEAR} > get-wales

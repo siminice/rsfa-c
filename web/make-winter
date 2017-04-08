@@ -1,0 +1,30 @@
+#!/bin/bash
+
+YEAR=${1:-2017}
+
+cd /home/radu/rsssf/sat/web
+
+echo 'make-get blr '${YEAR}' > get-belarus'
+make-get blr ${YEAR} > get-belarus
+echo 'make-get est '${YEAR}' > get-estonia'
+make-get est ${YEAR} > get-estonia
+echo 'make-get fae '${YEAR}' > get-faeroe'
+make-get fae ${YEAR} > get-faeroe
+echo 'make-get fin '${YEAR}' > get-finland'
+make-get fin ${YEAR} > get-finland
+echo 'make-get geo '${YEAR}' > get-georgia'
+make-get geo ${YEAR} > get-georgia
+echo 'make-get isl '${YEAR}' > get-iceland'
+make-get isl ${YEAR} > get-iceland
+echo 'make-get irl '${YEAR}' > get-ireland-republic'
+make-get irl ${YEAR} > get-ireland-republic
+echo 'make-get kaz '${YEAR}' > get-kazakhstan'
+make-get kaz ${YEAR} > get-kazakhstan
+echo 'make-get lat '${YEAR}' > get-latvia'
+make-get lat ${YEAR} > get-latvia
+echo 'make-get lit '${YEAR}' > get-lithuania'
+make-get lit ${YEAR} > get-lithuania
+echo 'make-get nor '${YEAR}' > get-norway'
+make-get nor ${YEAR} > get-norway
+echo 'make-get swe '${YEAR}' > get-sweden'
+make-get swe ${YEAR} > get-sweden
