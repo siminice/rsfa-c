@@ -1,4 +1,4 @@
-#!/bin/bash'
+#!/bin/bash
 
 YEAR=${1:-20162017}
 
@@ -32,8 +32,6 @@ echo 'make-get eng '${YEAR}' > get-england'
 make-get eng ${YEAR} > get-england
 echo 'make-get fra '${YEAR}' > get-france'
 make-get fra ${YEAR} > get-france
-echo 'make-get geo '${YEAR}' > get-georgia'
-make-get geo ${YEAR} > get-georgia
 echo 'make-get ger '${YEAR}' > get-germany'
 make-get ger ${YEAR} > get-germany
 echo 'make-get gib '${YEAR}' > get-gibraltar'
@@ -60,7 +58,7 @@ echo 'make-get mnt '${YEAR}' > get-montenegro'
 make-get mnt ${YEAR} > get-montenegro
 echo 'make-get ned '${YEAR}' > get-netherlands'
 make-get ned ${YEAR} > get-netherlands
-echo 'make-get nor '${YEAR}' > get-northern-ireland'
+echo 'make-get nir '${YEAR}' > get-northern-ireland'
 make-get nor ${YEAR} > get-northern-ireland
 echo 'make-get pol '${YEAR}' > get-poland'
 make-get pol ${YEAR} > get-poland

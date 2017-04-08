@@ -20,4 +20,5 @@ do
  SOURCE=$(echo ${REDIRECT} | sed -e 's|/national||g')
  echo 'echo "'"${COUNTRY}"': '"${arr[3]}"'"'
  echo '${CURL} ${SW}'"${SOURCE}"'matches/ > ${DIR}/'"${COUNTRY}"'/'"${arr[3]}"'.html'
+ echo ''
 done < cfg/${COUNTRY}
