@@ -18,7 +18,7 @@ do
  URL="${SW}/national/${arr[0]}/${arr[1]}/${SEASON}/${arr[2]}/"
  REDIRECT=$(get-redirect ${URL})
  SOURCE=$(echo ${REDIRECT} | sed -e 's|/national||g')
- echo 'echo "'"${COUNTRY}"': '"${arr[3]}"'"'
+ echo 'echo " > '"${COUNTRY}"' > '"${arr[3]}"' > '"${arr[1]}"'"'
  echo '${CURL} ${SW}'"${SOURCE}"'matches/ > ${DIR}/'"${COUNTRY}"'/'"${arr[3]}"'.html'
  echo ''
 done < cfg/${COUNTRY}
