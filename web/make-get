@@ -7,13 +7,16 @@ SEASON=$2
 
 echo '#!/bin/bash'
 echo ''
+echo 'SW="http://www.soccerway.com/national"'
+echo 'DIR="/home/radu/rsssf/sat/web"'
+echo ''
 
 while read line
 do
  read -a arr <<< ${line}
  URL="${SW}/national/${arr[0]}/${arr[1]}/${SEASON}/${arr[2]}/"
  REDIRECT=$(get-redirect ${URL})
+ SOURCE=$(echo ${REDIRECT} | sed -e 's|/national||g')
  echo 'echo "'"${COUNTRY}"': '"${arr[3]}"'"'
- echo "curl -s --get ${SW}${REDIRECT}matches/ > ${DIR}/${COUNTRY}/${arr[3]}.html"
- echo ''
+ echo 'curl -s --get ${SW}'"${SOURCE}"'matches/ > ${DIR}/'"${COUNTRY}"'/'"${arr[3]}"'.html'
 done < cfg/${COUNTRY}
