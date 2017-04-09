@@ -3,7 +3,7 @@
 SW="http://www.soccerway.com"
 DIR="/home/radu/rsssf/sat/web"
 COUNTRY=$1
-SEASON=$2
+SEASON=${2:-20162017}
 
 echo '#!/bin/bash'
 echo ''
@@ -18,7 +18,7 @@ do
  URL="${SW}/national/${arr[0]}/${arr[1]}/${SEASON}/${arr[2]}/"
  REDIRECT=$(get-redirect ${URL})
  SOURCE=$(echo ${REDIRECT} | sed -e 's|/national||g')
- echo 'echo " > '"${COUNTRY}"' > '"${arr[3]}"' > '"${arr[1]}"'"'
+ echo 'printf " %-3s > %-3s > %s > %s\n" "'"${COUNTRY}"'" "'"${arr[3]}"'" "'"${arr[1]}"'" "'"${arr[2]}"'"'
  echo '${CURL} ${SW}'"${SOURCE}"'matches/ > ${DIR}/'"${COUNTRY}"'/'"${arr[3]}"'.html'
  echo ''
 done < cfg/${COUNTRY}
